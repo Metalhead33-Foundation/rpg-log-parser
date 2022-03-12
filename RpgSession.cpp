@@ -59,6 +59,7 @@ void RpgSession::fromString(QTextStream& stream)
 	QString accumulator;
 	QString lastRead;
 	while(stream.readLineInto(&lastRead)) {
+		lastRead = lastRead.trimmed();
 		if(lastRead.startsWith(QStringLiteral("{{RPG Post/"))) {
 			accumulator = lastRead.append(QChar('\n'));
 		} else if(lastRead.endsWith(QStringLiteral("}}")) && lastRead.size() == 2) {

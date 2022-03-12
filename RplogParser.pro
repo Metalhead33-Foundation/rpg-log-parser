@@ -25,3 +25,7 @@ HEADERS += \
 
 FORMS += \
 	RpgPostWidget.ui
+
+DISTFILES += \
+	LICENSE \
+	README.md

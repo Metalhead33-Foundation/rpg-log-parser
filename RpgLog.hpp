@@ -15,6 +15,13 @@ private:
 	QString content;
 	bool streamlinedDate;
 public:
+	enum DateFormat {
+		Pidgin = 0,
+		ProBoards,
+		PhpBB2,
+		AoB,
+		Invalid
+	};
 	RpgLog();
 	RpgLog(const QString& user, const QString& date, const QString& content);
 	RpgLog(QString&& user, QString&& date, QString&& content);
@@ -38,8 +45,8 @@ public:
 	void fromString(QTextStream& stream);
 	void fromString(QString str);
 	// Streamlining date?
-	void attemptToStreamlineDate(const QList<QLocale>& localeList);
 	void attemptToStreamlineDate();
+	QDateTime attemptToStreamlineDate(DateFormat format);
 };
 
 QTextStream& operator<<(QTextStream& left, const RpgLog& right);

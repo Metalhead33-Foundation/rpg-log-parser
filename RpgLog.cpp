@@ -100,84 +100,185 @@ void RpgLog::fromString(QString str)
 	fromString(stream);
 }
 
-void RpgLog::attemptToStreamlineDate(const QList<QLocale>& localeList)
+void RpgLog::attemptToStreamlineDate()
 {
-	if(this->date.type() == QVariant::DateTime)
-	{
-		streamlinedDate = true;
-		return;
-	} else if(this->date.type() == QVariant::String) {
-		QDateTime initialParse = QDateTime::fromString(this->date.toString());
-		if(initialParse.isValid()) {
-			streamlinedDate = true;
-			this->date =initialParse;
-			return;
-		}
-		for(const auto& it : localeList) {
-			QDateTime initialParse = it.toDateTime(this->date.toString(), QLocale::LongFormat);
-			if(initialParse.isValid()) {
-				streamlinedDate = true;
-				this->date =initialParse;
-				return;
-			}
-			initialParse = it.toDateTime(this->date.toString(), QLocale::ShortFormat);
-			if(initialParse.isValid()) {
-				streamlinedDate = true;
-				this->date =initialParse;
-				return;
-			}
+	if(this->date.type() != QVariant::String) return;
+
+	for(int i = Pidgin; i < Invalid ; ++i) {
+		QDateTime tmp = attemptToStreamlineDate(DateFormat(i));
+		if(tmp.isValid()) {
+			this->date = tmp;
+			this->streamlinedDate = true;
 		}
 	}
 }
 
-void RpgLog::attemptToStreamlineDate()
+QDateTime RpgLog::attemptToStreamlineDate(DateFormat format)
 {
-	// 2022. márc. 12., szombat, 13:11:42
-	if(this->date.type() != QVariant::String) return;
-	QStringList tokens = this->date.toString().replace(QChar(','),QChar('.')).split(QChar('.'),Qt::SkipEmptyParts);
-	if(tokens.size() < 5) return;
-	for(auto& it : tokens) {
-		it = it.trimmed();
+	if(this->date.type() == QVariant::DateTime) return this->date.toDateTime();
+	switch (format) {
+	case Pidgin: {
+		// 2022. márc. 12., szombat, 13:11:42
+		QStringList tokens = this->date.toString().replace(QChar(','),QChar('.')).split(QChar('.'),Qt::SkipEmptyParts);
+		if(tokens.size() < 5) return QDateTime();
+		for(auto& it : tokens) {
+			it = it.trimmed();
+		}
+		bool okay = true;
+		int y = tokens[0].toInt(&okay);
+		if(!okay) return QDateTime();
+		int m = 0;
+		if(!tokens[1].compare(QStringLiteral("jan"),Qt::CaseInsensitive)) {
+			m = 1;
+		} else if(!tokens[1].compare(QStringLiteral("febr"),Qt::CaseInsensitive)) {
+			m = 2;
+		} else if(!tokens[1].compare(QStringLiteral("márc"),Qt::CaseInsensitive)) {
+			m = 3;
+		} else if(!tokens[1].compare(QStringLiteral("ápr"),Qt::CaseInsensitive)) {
+			m = 4;
+		} else if(!tokens[1].compare(QStringLiteral("máj"),Qt::CaseInsensitive)) {
+			m = 5;
+		} else if(!tokens[1].compare(QStringLiteral("jún"),Qt::CaseInsensitive)) {
+			m = 6;
+		} else if(!tokens[1].compare(QStringLiteral("júl"),Qt::CaseInsensitive)) {
+			m = 7;
+		} else if(!tokens[1].compare(QStringLiteral("aug"),Qt::CaseInsensitive)) {
+			m = 8;
+		} else if(!tokens[1].compare(QStringLiteral("szept"),Qt::CaseInsensitive)) {
+			m = 9;
+		} else if(!tokens[1].compare(QStringLiteral("okt"),Qt::CaseInsensitive)) {
+			m = 10;
+		} else if(!tokens[1].compare(QStringLiteral("nov"),Qt::CaseInsensitive)) {
+			m = 11;
+		} else if(!tokens[1].compare(QStringLiteral("dec"),Qt::CaseInsensitive)) {
+			m = 12;
+		} else {
+			return QDateTime();
+		}
+		int d = tokens[2].toInt(&okay);
+		if(!okay) return QDateTime();
+		QTime time = QTime::fromString(tokens[4]);
+		if(!time.isValid()) return QDateTime();
+		return QDateTime(QDate(y,m,d),time,QTimeZone::systemTimeZone());
 	}
-	bool okay = true;
-	int y = tokens[0].toInt(&okay);
-	if(!okay) return;
-	int m = 0;
-	if(!tokens[1].compare(QStringLiteral("jan"),Qt::CaseInsensitive)) {
-		m = 1;
-	} else if(!tokens[1].compare(QStringLiteral("febr"),Qt::CaseInsensitive)) {
-		m = 2;
-	} else if(!tokens[1].compare(QStringLiteral("márc"),Qt::CaseInsensitive)) {
-		m = 3;
-	} else if(!tokens[1].compare(QStringLiteral("ápr"),Qt::CaseInsensitive)) {
-		m = 4;
-	} else if(!tokens[1].compare(QStringLiteral("máj"),Qt::CaseInsensitive)) {
-		m = 5;
-	} else if(!tokens[1].compare(QStringLiteral("jún"),Qt::CaseInsensitive)) {
-		m = 6;
-	} else if(!tokens[1].compare(QStringLiteral("júl"),Qt::CaseInsensitive)) {
-		m = 7;
-	} else if(!tokens[1].compare(QStringLiteral("aug"),Qt::CaseInsensitive)) {
-		m = 8;
-	} else if(!tokens[1].compare(QStringLiteral("szept"),Qt::CaseInsensitive)) {
-		m = 9;
-	} else if(!tokens[1].compare(QStringLiteral("okt"),Qt::CaseInsensitive)) {
-		m = 10;
-	} else if(!tokens[1].compare(QStringLiteral("nov"),Qt::CaseInsensitive)) {
-		m = 11;
-	} else if(!tokens[1].compare(QStringLiteral("dec"),Qt::CaseInsensitive)) {
-		m = 12;
-	} else {
-		return;
+	case ProBoards: {
+		// Jan 8, 2010 at 10:34pm
+		QStringList tokens = this->date.toString().replace(QChar(','),QChar(' ')).split(QChar(' '),Qt::SkipEmptyParts);
+		if(tokens.size() < 5) return QDateTime();
+		for(auto& it : tokens) {
+			it = it.trimmed();
+		}
+		int m = 0;
+		if(tokens[0].startsWith("jan",Qt::CaseInsensitive)) {
+			m = 1;
+		} else if(tokens[0].startsWith("feb",Qt::CaseInsensitive)) {
+			m = 2;
+		} else if(tokens[0].startsWith("mar",Qt::CaseInsensitive)) {
+			m = 3;
+		} else if(tokens[0].startsWith("apr",Qt::CaseInsensitive)) {
+			m = 4;
+		} else if(tokens[0].startsWith("may",Qt::CaseInsensitive)) {
+			m = 5;
+		} else if(tokens[0].startsWith("jun",Qt::CaseInsensitive)) {
+			m = 6;
+		} else if(tokens[0].startsWith("jul",Qt::CaseInsensitive)) {
+			m = 7;
+		} else if(tokens[0].startsWith("aug",Qt::CaseInsensitive)) {
+			m = 8;
+		} else if(tokens[0].startsWith("sept",Qt::CaseInsensitive)) {
+			m = 9;
+		} else if(tokens[0].startsWith("oct",Qt::CaseInsensitive)) {
+			m = 10;
+		} else if(tokens[0].startsWith("nov",Qt::CaseInsensitive)) {
+			m = 11;
+		} else if(tokens[0].startsWith("dec",Qt::CaseInsensitive)) {
+			m = 12;
+		} else {
+			return QDateTime();
+		}
+		bool okay = true;
+		int d = tokens[1].toInt(&okay);
+		if(!okay) return QDateTime();
+		int y = tokens[2].toInt(&okay);
+		if(!okay) return QDateTime();
+		QStringList time = tokens[4].left(tokens[4].size()-2).split(QChar(':'),Qt::SkipEmptyParts);
+		if(time.size() < 2) return QDateTime();
+		int hr = time[0].toInt(&okay);
+		if(!okay) return QDateTime();
+		int min = time[1].toInt(&okay);
+		if(!okay) return QDateTime();
+		if(tokens[4].endsWith(QStringLiteral("pm"),Qt::CaseInsensitive)) hr += 12;
+		return QDateTime(QDate(y,m,d),QTime(hr,min,0,0),QTimeZone::systemTimeZone());
 	}
-	int d = tokens[2].toInt(&okay);
-	if(!okay) return;
-	QTime time = QTime::fromString(tokens[4]);
-	if(!time.isValid()) return;
-	QDateTime tmp(QDate(y,m,d),time,QTimeZone::systemTimeZone());
-	if(tmp.isValid()) {
-		this->date = tmp;
-		this->streamlinedDate = true;
+	case PhpBB2: {
+		// Pént. Jún. 04, 2010 11:25 am
+		QStringList tokens = this->date.toString().replace(QChar(','),QChar('.')).replace(QChar('.'),QChar(' ')).split(QChar(' '),Qt::SkipEmptyParts);
+		if(tokens.size() < 6) return QDateTime();
+		for(auto& it : tokens) {
+			it = it.trimmed();
+		}
+		int m = 0;
+		if(tokens[1].startsWith("jan",Qt::CaseInsensitive)) {
+			m = 1;
+		} else if(tokens[1].startsWith("febr",Qt::CaseInsensitive)) {
+			m = 2;
+		} else if(tokens[1].startsWith("márc",Qt::CaseInsensitive)) {
+			m = 3;
+		} else if(tokens[1].startsWith("ápr",Qt::CaseInsensitive)) {
+			m = 4;
+		} else if(tokens[1].startsWith("máj",Qt::CaseInsensitive)) {
+			m = 5;
+		} else if(tokens[1].startsWith("jún",Qt::CaseInsensitive)) {
+			m = 6;
+		} else if(tokens[1].startsWith("júl",Qt::CaseInsensitive)) {
+			m = 7;
+		} else if(tokens[1].startsWith("aug",Qt::CaseInsensitive)) {
+			m = 8;
+		} else if(tokens[1].startsWith("szept",Qt::CaseInsensitive)) {
+			m = 9;
+		} else if(tokens[1].startsWith("okt",Qt::CaseInsensitive)) {
+			m = 10;
+		} else if(tokens[1].startsWith("nov",Qt::CaseInsensitive)) {
+			m = 11;
+		} else if(tokens[1].startsWith("dec",Qt::CaseInsensitive)) {
+			m = 12;
+		} else {
+			return QDateTime();
+		}
+		bool okay = true;
+		int d = tokens[2].toInt(&okay);
+		if(!okay) return QDateTime();
+		int y = tokens[3].toInt(&okay);
+		if(!okay) return QDateTime();
+		QStringList time = tokens[4].split(QChar(':'),Qt::SkipEmptyParts);
+		if(time.size() < 2) return QDateTime();
+		int hr = time[0].toInt(&okay);
+		if(!okay) return QDateTime();
+		int min = time[1].toInt(&okay);
+		if(!okay) return QDateTime();
+		if(!tokens[5].compare(QStringLiteral("pm"),Qt::CaseInsensitive)) hr += 12;
+		return QDateTime(QDate(y,m,d),QTime(hr,min,0,0),QTimeZone::systemTimeZone());
+	}
+	case AoB: {
+		// 07/23/2008 02:09:36
+		QStringList tokens = this->date.toString().replace(QChar('/'),QChar(' ')).split(QChar(' '),Qt::SkipEmptyParts);
+		if(tokens.size() < 4) return QDateTime();
+		for(auto& it : tokens) {
+			it = it.trimmed();
+		}
+		bool okay = true;
+		int m = tokens[0].toInt(&okay);
+		if(!okay) return QDateTime();
+		int d = tokens[1].toInt(&okay);
+		if(!okay) return QDateTime();
+		int y = tokens[2].toInt(&okay);
+		if(!okay) return QDateTime();
+		QTime time = QTime::fromString(tokens[3]);
+		if(!time.isValid()) return QDateTime();
+		return QDateTime(QDate(y,m,d),time,QTimeZone::systemTimeZone());
+	}
+	default:
+		return QDateTime();
 	}
 }
 
