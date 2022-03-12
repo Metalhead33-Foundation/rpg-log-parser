@@ -38,6 +38,9 @@ void RpgLog::toJson(QJsonObject& json) const
 	json[QStringLiteral("date")] = QJsonValue::fromVariant(this->date);
 	json[QStringLiteral("content")] = this->content;
 	json[QStringLiteral("streamlinedDate")] = this->streamlinedDate;
+	if(this->streamlinedDate) {
+		json[QStringLiteral("unixTimestamp")] = this->date.toDateTime().toUTC().toSecsSinceEpoch();
+	}
 }
 
 QJsonObject RpgLog::toJson() const
