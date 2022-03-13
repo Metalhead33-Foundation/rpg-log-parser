@@ -55,9 +55,11 @@ void RpgLog::fromJson(const QJsonObject& json)
 {
 	this->hun = json[QStringLiteral("hun")].toBool();
 	this->user = json[QStringLiteral("user")].toString();
-	this->date = json[QStringLiteral("date")].toVariant();
 	this->content = json[QStringLiteral("content")].toString();
 	this->streamlinedDate = json[QStringLiteral("streamlinedDate")].toBool();
+	if(this->streamlinedDate && json.contains(QStringLiteral("unixTimestamp"))) {
+		this->date = QDateTime::fromSecsSinceEpoch(json[QStringLiteral("unixTimestamp")].toDouble(),Qt::UTC).toLocalTime();
+	} else this->date = json[QStringLiteral("date")].toString();
 }
 
 static const QString POST_START = QStringLiteral("{{RPG Post/");

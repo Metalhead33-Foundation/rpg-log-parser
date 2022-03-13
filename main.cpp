@@ -24,6 +24,8 @@ int handle(const QMap<QString,QString>& args);
 void handleException(const std::exception& e);
 int consoleTextlog(const QMap<QString,QString>& args);
 int consoleTextlogDir(const QMap<QString,QString>& args);
+int consoleJsonlog(const QMap<QString,QString>& args);
+int consoleJsonlogDir(const QMap<QString,QString>& args);
 int consoleTemplateJsonDir(const QMap<QString,QString>& args);
 
 static const QString ARG_MODE = QStringLiteral("--mode");
@@ -101,6 +103,8 @@ int handle(const QMap<QString,QString>& args) {
 	if(args.contains(ARG_IN) && args.contains(ARG_OUT)) {
 		if(!args[ARG_MODE].compare(MODE_TEXTLOG2JSON,Qt::CaseInsensitive)) return consoleTextlog(args);
 		else if(!args[ARG_MODE].compare(MODE_TEXTLOG2JSON_DIR,Qt::CaseInsensitive)) return consoleTextlogDir(args);
+		else if(!args[ARG_MODE].compare(MODE_TEXTLOG2JSON,Qt::CaseInsensitive)) return consoleJsonlog(args);
+		else if(!args[ARG_MODE].compare(MODE_JSON2TEXTLOG_DIR,Qt::CaseInsensitive)) return consoleJsonlogDir(args);
 		else if(!args[ARG_MODE].compare(MODE_TEMPLATE2JSON_DIR,Qt::CaseInsensitive)) return consoleTemplateJsonDir(args);
 		else {
 			std::cout << "Unsupported mode!" << std::endl;
@@ -138,6 +142,32 @@ int consoleTextlog(const QMap<QString,QString>& args) {
 		return -1;
 	}
 }
+int consoleJsonlog(const QMap<QString,QString>& args) {
+	try {
+	QString in = args[ARG_IN];
+	QFile inF(in);
+	if(!inF.open(QFile::ReadOnly)) {
+		throw QFileException(in, QFile::ReadOnly);
+	}
+	QString out = args[ARG_OUT];
+	QFile outF(out);
+	if(!outF.open(QFile::WriteOnly)) {
+		throw QFileException(out, QFile::WriteOnly);
+	}
+	QJsonDocument json = QJsonDocument::fromJson(inF.readAll());
+	inF.close();
+	RpgSession session;
+	session.fromJson(json.array());
+	QTextStream stream(&outF);
+	session.toString(stream);
+	stream.flush();
+	outF.close();
+	return 0;
+	}  catch (const std::exception& e) {
+		handleException(e);
+		return -1;
+	}
+}
 int consoleTextlogDir(const QMap<QString,QString>& args) {
 	try {
 	QDirIterator dirIn(args[ARG_IN]);
@@ -159,6 +189,40 @@ int consoleTextlogDir(const QMap<QString,QString>& args) {
 		inF.close();
 		outF.flush();
 		outF.close();
+		}
+	}
+	catch (const std::exception& e) {
+		handleException(e);
+		return -1;
+	}
+	return 0;
+}
+int consoleJsonlogDir(const QMap<QString,QString>& args) {
+	try {
+	QDirIterator dirIn(args[ARG_IN]);
+	QDir dirOut(args[ARG_OUT]);
+	while(dirIn.hasNext()) {
+		QString path = dirIn.next();
+		QFileInfo info(path);
+		QString outPath = dirOut.absoluteFilePath(QStringLiteral("%1.txt").arg(info.baseName()));
+
+		QFile inF(path);
+		if(!inF.open(QFile::ReadOnly)) {
+			throw QFileException(path, QFile::ReadOnly);
+		}
+		QFile outF(outPath);
+		if(!outF.open(QFile::WriteOnly)) {
+			throw QFileException(outPath, QFile::WriteOnly);
+		}
+		QJsonDocument json = QJsonDocument::fromJson(inF.readAll());
+		inF.close();
+		RpgSession session;
+		session.fromJson(json.array());
+		QTextStream stream(&outF);
+		session.toString(stream);
+		stream.flush();
+		outF.close();
+		return 0;
 		}
 	}
 	catch (const std::exception& e) {
