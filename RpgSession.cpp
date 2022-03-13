@@ -18,7 +18,7 @@ void RpgSession::setSections(const QList<RpgSection>& newSections)
 void RpgSession::toJson(QJsonArray& json) const
 {
 	for(const auto& it : sections) {
-		json.push_back(it.toJson());
+		if(!it.getLogs().isEmpty()) json.push_back(it.toJson());
 	}
 }
 
