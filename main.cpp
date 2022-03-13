@@ -14,7 +14,6 @@ void text2json(QIODevice& in, QIODevice& out) {
 	RpgSession sess;
 	QTextStream strem(&in);
 	sess.fromString(strem);
-	sess.streamlineDates();
 	QJsonDocument doc(sess.toJson());
 	out.write(doc.toJson());
 }
@@ -46,12 +45,13 @@ int main(int argc, char *argv[])
 	for(int i = 1; i < (argc - 1); i += 2) {
 		args.insert(QString::fromUtf8(argv[i]).trimmed(),QString::fromUtf8(argv[i+1]).trimmed());
 	}
-	if(args.contains(ARG_MODE) || !args.contains(ARG_IN) || !args.contains(ARG_OUT)) {
+	if(!args.contains(ARG_MODE) || !args.contains(ARG_IN) || !args.contains(ARG_OUT)) {
 		windowMode = true;
 		QApplication a(argc, argv);
 		args.insert(ARG_MODE,QInputDialog::getItem(nullptr,QStringLiteral("Select mode"),QStringLiteral("Mode:"),MODES,0,false));
 		if(!args.contains(ARG_MODE)) {
-			args.insert(ARG_MODE,MODE_TEXTLOG2JSON);
+			//args.insert(ARG_MODE,MODE_TEXTLOG2JSON);
+			args.insert(ARG_MODE,QInputDialog::getItem(nullptr,QStringLiteral("Select mode"),QStringLiteral("Mode:"),MODES,0,false));
 		}
 		if(!args.contains(ARG_IN)) {
 			if(!args[ARG_MODE].compare(MODE_TEXTLOG2JSON,Qt::CaseInsensitive))

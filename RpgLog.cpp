@@ -92,9 +92,14 @@ void RpgLog::fromString(QTextStream& stream)
 			this->user = lastRead.mid(POST_START.size());
 		} else if(lastRead.startsWith(DATE_START)) {
 			this->date = lastRead.mid(DATE_START.size());
+		} else if(lastRead.startsWith(CONTENT_START) && lastRead.endsWith(POST_END)) {
+			lastRead = lastRead.mid(CONTENT_START.size());
+			this->content = lastRead.left(lastRead.size() - POST_END.size());
+			return;
 		} else if(lastRead.startsWith(CONTENT_START)) {
 			this->content = lastRead.mid(CONTENT_START.size()).append(QChar('\n'));
-		} else if(!lastRead.compare(POST_END)) {
+		} else if(lastRead.endsWith(POST_END)) {
+			this->content = this->content.append(lastRead.leftRef(lastRead.size() - POST_END.size()));
 			return;
 		} else if(!lastRead.compare(POST_HUN)) {
 			this->hun = true;
@@ -288,6 +293,52 @@ QDateTime RpgLog::attemptToStreamlineDate(DateFormat format)
 		if(!time.isValid()) return QDateTime();
 		return QDateTime(QDate(y,m,d),time,QTimeZone::systemTimeZone());
 	}
+	case FListPriv: {
+		// 2020 May 19 15:10
+		QStringList tokens = this->date.toString().replace(QChar(','),QChar(' ')).split(QChar(' '),Qt::SkipEmptyParts);
+		if(tokens.size() < 3) return QDateTime();
+		bool okay = true;
+		int y = tokens[0].toInt(&okay);
+		if(!okay) return QDateTime();
+		int d = tokens[2].toInt(&okay);
+		if(!okay) return QDateTime();
+		int m = 0;
+		if(tokens[1].startsWith("jan",Qt::CaseInsensitive)) {
+			m = 1;
+		} else if(tokens[1].startsWith("feb",Qt::CaseInsensitive)) {
+			m = 2;
+		} else if(tokens[1].startsWith("mar",Qt::CaseInsensitive)) {
+			m = 3;
+		} else if(tokens[1].startsWith("apr",Qt::CaseInsensitive)) {
+			m = 4;
+		} else if(tokens[1].startsWith("may",Qt::CaseInsensitive)) {
+			m = 5;
+		} else if(tokens[1].startsWith("jun",Qt::CaseInsensitive)) {
+			m = 6;
+		} else if(tokens[1].startsWith("jul",Qt::CaseInsensitive)) {
+			m = 7;
+		} else if(tokens[1].startsWith("aug",Qt::CaseInsensitive)) {
+			m = 8;
+		} else if(tokens[1].startsWith("sept",Qt::CaseInsensitive)) {
+			m = 9;
+		} else if(tokens[1].startsWith("oct",Qt::CaseInsensitive)) {
+			m = 10;
+		} else if(tokens[1].startsWith("nov",Qt::CaseInsensitive)) {
+			m = 11;
+		} else if(tokens[1].startsWith("dec",Qt::CaseInsensitive)) {
+			m = 12;
+		} else {
+			return QDateTime();
+		}
+		if(tokens.size() < 4) return QDateTime(QDate(y,m,d),QTime(0,0,0,0),QTimeZone::systemTimeZone());
+		QStringList time = tokens[3].split(QChar(':'),Qt::SkipEmptyParts);
+		if(time.size() < 2) return QDateTime();
+		int hr = time[0].toInt(&okay);
+		if(!okay) return QDateTime();
+		int min = time[1].toInt(&okay);
+		if(!okay) return QDateTime();
+		return QDateTime(QDate(y,m,d),QTime(hr,min,0,0),QTimeZone::systemTimeZone());
+	}
 	default:
 		return QDateTime();
 	}
@@ -306,6 +357,7 @@ void RpgLog::setHun(bool newHun)
 RpgLog::RpgLog()
 {
 	streamlinedDate = false;
+	hun = false;
 }
 
 RpgLog::RpgLog(const QString& user, const QString& date, const QString& content)

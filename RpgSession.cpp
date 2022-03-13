@@ -1,24 +1,23 @@
 #include "RpgSession.hpp"
-#include <QLocale>
 
-const QList<RpgLog>& RpgSession::getLogs() const
+const QList<RpgSection>& RpgSession::getSections() const
 {
-	return logs;
+	return sections;
 }
 
-QList<RpgLog>& RpgSession::getLogs()
+QList<RpgSection>& RpgSession::getSections()
 {
-	return logs;
+	return sections;
 }
 
-void RpgSession::setLogs(const QList<RpgLog>& newLogs)
+void RpgSession::setSections(const QList<RpgSection>& newSections)
 {
-	logs = newLogs;
+	sections = newSections;
 }
 
 void RpgSession::toJson(QJsonArray& json) const
 {
-	for(const auto& it : logs) {
+	for(const auto& it : sections) {
 		json.push_back(it.toJson());
 	}
 }
@@ -33,16 +32,16 @@ QJsonArray RpgSession::toJson() const
 void RpgSession::fromJson(const QJsonArray& json)
 {
 	for(const auto& it : json) {
-		RpgLog tmp;
+		RpgSection tmp;
 		tmp.fromJson(it.toObject());
-		logs.push_back(std::move(tmp));
+		sections.push_back(std::move(tmp));
 	}
 }
 
 void RpgSession::toString(QTextStream& stream) const
 {
-	for(const auto& it : logs) {
-		stream << it << QChar('\n');
+	for(const auto& it : sections) {
+		stream << it;
 	}
 }
 
@@ -59,39 +58,43 @@ void RpgSession::fromString(QTextStream& stream)
 	QString accumulator;
 	QString lastRead;
 	while(stream.readLineInto(&lastRead)) {
-		lastRead = lastRead.trimmed();
-		if(lastRead.startsWith(QStringLiteral("{{RPG Post/"))) {
-			accumulator = lastRead.append(QChar('\n'));
-		} else if(lastRead.endsWith(QStringLiteral("}}")) && lastRead.size() == 2) {
-			accumulator.append(lastRead);
-			RpgLog tmp;
-			tmp.fromString(accumulator);
-			logs.push_back(std::move(tmp));
+		if(lastRead.startsWith(QStringLiteral("==")) && lastRead.endsWith(QStringLiteral("==")) ) {
+			if(accumulator.startsWith(QStringLiteral("=="))) {
+				RpgSection sect;
+				sect.fromString(accumulator.replace(QStringLiteral("{{Str}}"),QStringLiteral("<nowiki>*</nowiki>")));
+				sect.streamlineDates();
+				sections.push_back(std::move(sect));
+			}
 			accumulator.clear();
+			accumulator = lastRead.append(QChar('\n'));
 		} else {
 			accumulator = accumulator.append(lastRead).append(QChar('\n'));
 		}
+	}
+	if(accumulator.startsWith(QStringLiteral("=="))) {
+		RpgSection sect;
+		sect.fromString(accumulator.replace(QStringLiteral("{{Str}}"),QStringLiteral("<nowiki>*</nowiki>")));
+		sect.streamlineDates();
+		sections.push_back(std::move(sect));
 	}
 }
 
 void RpgSession::fromString(QString str)
 {
-	QTextStream stream(&str, QIODevice::ReadOnly);
+	QString tmp;
+	QTextStream stream(&tmp, QIODevice::ReadWrite);
 	fromString(stream);
-}
-
-void RpgSession::streamlineDates()
-{
-	/*QList<QLocale> locales;
-	for(int i = 0; i < 370 ; ++i) {
-		locales.push_back(QLocale(QLocale::Language(i)));
-	}*/
-	for(auto& it : logs) {
-		it.attemptToStreamlineDate();
-	}
 }
 
 RpgSession::RpgSession()
 {
 
+}
+QTextStream& operator<<(QTextStream& left, const RpgSession& right) {
+	right.toString(left);
+	return left;
+}
+QTextStream& operator>>(QTextStream& left, RpgSession& right) {
+	right.fromString(left);
+	return left;
 }

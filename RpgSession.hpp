@@ -1,29 +1,27 @@
 #ifndef RPGSESSION_HPP
 #define RPGSESSION_HPP
-#include "RpgLog.hpp"
-#include <QList>
-#include <QJsonArray>
+#include "RpgSection.hpp"
 
 class RpgSession
 {
 private:
-	QList<RpgLog> logs;
+	QList<RpgSection> sections;
 public:
 	RpgSession();
-	const QList<RpgLog>& getLogs() const;
-	QList<RpgLog>& getLogs();
-	void setLogs(const QList<RpgLog>& newLogs);
-	// Json transforms
+	const QList<RpgSection>& getSections() const;
+	QList<RpgSection>& getSections();
+	void setSections(const QList<RpgSection>& newSections);
+	// JSON
 	void toJson(QJsonArray& json) const;
 	QJsonArray toJson(void) const;
 	void fromJson(const QJsonArray& json);
-	// String transforms
+	// String
 	void toString(QTextStream& stream) const;
-	QString toString() const;
+	QString toString(void) const;
 	void fromString(QTextStream& stream);
 	void fromString(QString str);
-
-	void streamlineDates();
 };
+QTextStream& operator<<(QTextStream& left, const RpgSession& right);
+QTextStream& operator>>(QTextStream& left, RpgSession& right);
 
 #endif // RPGSESSION_HPP

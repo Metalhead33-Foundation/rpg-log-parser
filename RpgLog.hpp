@@ -21,6 +21,7 @@ public:
 		ProBoards,
 		PhpBB2,
 		AoB,
+		FListPriv,
 		Invalid
 	};
 	RpgLog();

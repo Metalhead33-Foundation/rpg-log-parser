@@ -12,6 +12,7 @@ SOURCES += \
         RpgLog.cpp \
         RpgPostTemplate.cpp \
         RpgPostWidget.cpp \
+        RpgSection.cpp \
         RpgSession.cpp \
         main.cpp
 
@@ -25,6 +26,7 @@ HEADERS += \
 	RpgLog.hpp \
 	RpgPostTemplate.hpp \
 	RpgPostWidget.hpp \
+	RpgSection.hpp \
 	RpgSession.hpp
 
 FORMS += \
