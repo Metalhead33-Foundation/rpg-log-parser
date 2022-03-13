@@ -176,7 +176,7 @@ int consoleTextlogDir(const QMap<QString,QString>& args) {
 		QString path = dirIn.next();
 		QFileInfo info(path);
 		QString outPath = dirOut.absoluteFilePath(QStringLiteral("%1.json").arg(info.baseName()));
-
+		if(info.isFile()) {
 		QFile inF(path);
 		if(!inF.open(QFile::ReadOnly)) {
 			throw QFileException(path, QFile::ReadOnly);
@@ -189,6 +189,7 @@ int consoleTextlogDir(const QMap<QString,QString>& args) {
 		inF.close();
 		outF.flush();
 		outF.close();
+		}
 		}
 	}
 	catch (const std::exception& e) {
@@ -205,7 +206,7 @@ int consoleJsonlogDir(const QMap<QString,QString>& args) {
 		QString path = dirIn.next();
 		QFileInfo info(path);
 		QString outPath = dirOut.absoluteFilePath(QStringLiteral("%1.txt").arg(info.baseName()));
-
+		if(info.isFile()) {
 		QFile inF(path);
 		if(!inF.open(QFile::ReadOnly)) {
 			throw QFileException(path, QFile::ReadOnly);
@@ -222,6 +223,7 @@ int consoleJsonlogDir(const QMap<QString,QString>& args) {
 		session.toString(stream);
 		stream.flush();
 		outF.close();
+		}
 		return 0;
 		}
 	}

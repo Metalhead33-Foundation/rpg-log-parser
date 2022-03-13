@@ -34,4 +34,5 @@ FORMS += \
 
 DISTFILES += \
 	LICENSE \
-	README.md
+	README.md \
+	process.sh
