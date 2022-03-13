@@ -34,6 +34,7 @@ void RpgLog::setContent(const QString& newContent)
 
 void RpgLog::toJson(QJsonObject& json) const
 {
+	json[QStringLiteral("hun")] = this->hun;
 	json[QStringLiteral("user")] = this->user;
 	json[QStringLiteral("date")] = QJsonValue::fromVariant(this->date);
 	json[QStringLiteral("content")] = this->content;
@@ -52,6 +53,7 @@ QJsonObject RpgLog::toJson() const
 
 void RpgLog::fromJson(const QJsonObject& json)
 {
+	this->hun = json[QStringLiteral("hun")].toBool();
 	this->user = json[QStringLiteral("user")].toString();
 	this->date = json[QStringLiteral("date")].toVariant();
 	this->content = json[QStringLiteral("content")].toString();
@@ -60,13 +62,15 @@ void RpgLog::fromJson(const QJsonObject& json)
 
 static const QString POST_START = QStringLiteral("{{RPG Post/");
 static const QString DATE_START = QStringLiteral("|date=");
+static const QString POST_HUN = QStringLiteral("|hun=yes");
+static const QString POST_HUN_N = QStringLiteral("|hun=yes\n");
 static const QString CONTENT_START = QStringLiteral("|post=");
 static const QString POST_END = QStringLiteral("}}");
 
 void RpgLog::toString(QTextStream& stream) const
 {
 	//stream << QStringLiteral("{{RPG Post/%1\n|date=%2\n|post=%3\n}}").arg(user).arg(date).arg(content);
-	stream << POST_START << user << '\n' << DATE_START << date.toString() << '\n' << CONTENT_START << content << '\n' << POST_END;
+	stream << POST_START << user << '\n' << DATE_START << date.toString() << (hun ? POST_HUN_N : QStringLiteral("\n")) << CONTENT_START << content << '\n' << POST_END;
 }
 
 QString RpgLog::toString() const
@@ -90,6 +94,8 @@ void RpgLog::fromString(QTextStream& stream)
 			this->content = lastRead.mid(CONTENT_START.size()).append(QChar('\n'));
 		} else if(!lastRead.compare(POST_END)) {
 			return;
+		} else if(!lastRead.compare(POST_HUN)) {
+			this->hun = true;
 		} else {
 			this->content = this->content.append(QChar('\n')).append(lastRead);
 		}
@@ -285,31 +291,41 @@ QDateTime RpgLog::attemptToStreamlineDate(DateFormat format)
 	}
 }
 
+bool RpgLog::getHun() const
+{
+	return hun;
+}
+
+void RpgLog::setHun(bool newHun)
+{
+	hun = newHun;
+}
+
 RpgLog::RpgLog()
 {
 	streamlinedDate = false;
 }
 
 RpgLog::RpgLog(const QString& user, const QString& date, const QString& content)
-	: user(user), date(date), content(content), streamlinedDate(false)
+	: user(user), date(date), content(content), streamlinedDate(false), hun(false)
 {
 
 }
 
 RpgLog::RpgLog(QString&& user, QString&& date, QString&& content)
-	: user(std::move(user)), date(std::move(date)), content(std::move(content)), streamlinedDate(false)
+	: user(std::move(user)), date(std::move(date)), content(std::move(content)), streamlinedDate(false), hun(false)
 {
 
 }
 
 RpgLog::RpgLog(RpgLog&& mov)
-	: user(std::move(mov.user)), date(std::move(mov.date)), content(std::move(mov.content)), streamlinedDate(mov.streamlinedDate)
+	: user(std::move(mov.user)), date(std::move(mov.date)), content(std::move(mov.content)), streamlinedDate(mov.streamlinedDate), hun(mov.hun)
 {
 
 }
 
 RpgLog::RpgLog(const RpgLog& cpy)
-	: user(cpy.user), date(cpy.date), content(cpy.content), streamlinedDate(cpy.streamlinedDate)
+	: user(cpy.user), date(cpy.date), content(cpy.content), streamlinedDate(cpy.streamlinedDate), hun(cpy.hun)
 {
 
 }
@@ -320,6 +336,7 @@ RpgLog& RpgLog::operator=(RpgLog&& mov)
 	this->date = std::move(mov.date);
 	this->content = std::move(mov.content);
 	this->streamlinedDate = mov.streamlinedDate;
+	this->hun = mov.hun;
 	return *this;
 }
 RpgLog& RpgLog::operator=(const RpgLog& cpy)
@@ -328,6 +345,7 @@ RpgLog& RpgLog::operator=(const RpgLog& cpy)
 	this->date = cpy.date;
 	this->content = cpy.content;
 	this->streamlinedDate = cpy.streamlinedDate;
+	this->hun = cpy.hun;
 	return *this;
 }
 QTextStream& operator<<(QTextStream& left, const RpgLog& right) {

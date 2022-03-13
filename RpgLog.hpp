@@ -14,6 +14,7 @@ private:
 	QVariant date;
 	QString content;
 	bool streamlinedDate;
+	bool hun;
 public:
 	enum DateFormat {
 		Pidgin = 0,
@@ -35,6 +36,8 @@ public:
 	void setDate(const QVariant& newDate);
 	const QString& getContent() const;
 	void setContent(const QString& newContent);
+	bool getHun() const;
+	void setHun(bool newHun);
 	// Json transforms
 	void toJson(QJsonObject& json) const;
 	QJsonObject toJson(void) const;
