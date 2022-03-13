@@ -20,8 +20,10 @@ public:
 		Pidgin = 0,
 		ProBoards,
 		PhpBB2,
+		PhpBB2_Alt,
 		AoB,
 		FListPriv,
+		Litphoria,
 		Invalid
 	};
 	RpgLog();
