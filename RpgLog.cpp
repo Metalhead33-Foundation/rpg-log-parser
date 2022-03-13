@@ -116,6 +116,7 @@ void RpgLog::fromString(QString str)
 	fromString(stream);
 }
 
+static QDateTime validlastDateTime;
 void RpgLog::attemptToStreamlineDate()
 {
 	if(this->date.type() != QVariant::String) return;
@@ -123,10 +124,12 @@ void RpgLog::attemptToStreamlineDate()
 	for(int i = Pidgin; i < Invalid ; ++i) {
 		QDateTime tmp = attemptToStreamlineDate(DateFormat(i));
 		if(tmp.isValid()) {
+			validlastDateTime = tmp;
 			this->date = tmp;
 			this->streamlinedDate = true;
 		}
 	}
+
 }
 
 QDateTime RpgLog::attemptToStreamlineDate(DateFormat format)
@@ -134,6 +137,12 @@ QDateTime RpgLog::attemptToStreamlineDate(DateFormat format)
 	if(this->date.type() == QVariant::DateTime) return this->date.toDateTime();
 	switch (format) {
 	case Pidgin: {
+		// unknown 22.23.39
+		QStringList tmptor = this->date.toString().split(QChar(' '),Qt::SkipEmptyParts);
+		if(tmptor.size() == 2 && !tmptor[0].compare(QStringLiteral("unknown"),Qt::CaseInsensitive) && validlastDateTime.isValid()) {
+			QTime time = QTime::fromString(tmptor[1].replace(QChar('.'),QChar(':')));
+			if(time.isValid()) return QDateTime(validlastDateTime.date(),time,QTimeZone::systemTimeZone());
+		}
 		// 2022. márc. 12., szombat, 13:11:42
 		// 2022. febr. 6., vasárnap, 15:13:50
 		QStringList tokens = this->date.toString().replace(QStringLiteral("«"),QChar(' '))
@@ -175,7 +184,7 @@ QDateTime RpgLog::attemptToStreamlineDate(DateFormat format)
 		}
 		int d = tokens[2].toInt(&okay);
 		if(!okay) return QDateTime();
-		QTime time = QTime::fromString(tokens[4]);
+		QTime time = QTime::fromString(tokens[4].replace(QChar('.'),QChar(':')));
 		if(!time.isValid()) return QDateTime();
 		return QDateTime(QDate(y,m,d),time,QTimeZone::systemTimeZone());
 	}
