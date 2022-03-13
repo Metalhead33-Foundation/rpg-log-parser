@@ -58,7 +58,7 @@ void RpgLog::fromJson(const QJsonObject& json)
 	this->content = json[QStringLiteral("content")].toString();
 	this->streamlinedDate = json[QStringLiteral("streamlinedDate")].toBool();
 	if(this->streamlinedDate && json.contains(QStringLiteral("unixTimestamp"))) {
-		this->date = QDateTime::fromSecsSinceEpoch(json[QStringLiteral("unixTimestamp")].toDouble(),Qt::UTC).toLocalTime();
+		this->date = json[QStringLiteral("date")].toVariant().toDateTime();
 	} else this->date = json[QStringLiteral("date")].toString();
 }
 

@@ -60,7 +60,7 @@ int main(int argc, char *argv[])
 			else if(!args[ARG_MODE].compare(MODE_TEXTLOG2JSON_DIR,Qt::CaseInsensitive))
 				args.insert(ARG_IN,QFileDialog::getExistingDirectory(nullptr, QStringLiteral("Open Directory (for reading)"),
 					QString()));
-			else if(!args[ARG_MODE].compare(MODE_TEXTLOG2JSON,Qt::CaseInsensitive))
+			else if(!args[ARG_MODE].compare(MODE_JSON2TEXTLOG,Qt::CaseInsensitive))
 				args.insert(ARG_IN,QFileDialog::getOpenFileName(nullptr, QStringLiteral("Open File"),
 					QString(), QStringLiteral("JSON files (*.json)")));
 			else if(!args[ARG_MODE].compare(MODE_JSON2TEXTLOG_DIR,Qt::CaseInsensitive))
@@ -77,7 +77,7 @@ int main(int argc, char *argv[])
 			else if(!args[ARG_MODE].compare(MODE_TEXTLOG2JSON_DIR,Qt::CaseInsensitive))
 				args.insert(ARG_OUT,QFileDialog::getExistingDirectory(nullptr, QStringLiteral("Open Directory (for writing)"),
 					QString()));
-			else if(!args[ARG_MODE].compare(MODE_TEXTLOG2JSON,Qt::CaseInsensitive))
+			else if(!args[ARG_MODE].compare(MODE_JSON2TEXTLOG,Qt::CaseInsensitive))
 				args.insert(ARG_OUT,QFileDialog::getSaveFileName(nullptr, QStringLiteral("Save File"),
 					QString(), QStringLiteral("Text files (*.txt)")));
 			else if(!args[ARG_MODE].compare(MODE_JSON2TEXTLOG_DIR,Qt::CaseInsensitive))
@@ -103,7 +103,7 @@ int handle(const QMap<QString,QString>& args) {
 	if(args.contains(ARG_IN) && args.contains(ARG_OUT)) {
 		if(!args[ARG_MODE].compare(MODE_TEXTLOG2JSON,Qt::CaseInsensitive)) return consoleTextlog(args);
 		else if(!args[ARG_MODE].compare(MODE_TEXTLOG2JSON_DIR,Qt::CaseInsensitive)) return consoleTextlogDir(args);
-		else if(!args[ARG_MODE].compare(MODE_TEXTLOG2JSON,Qt::CaseInsensitive)) return consoleJsonlog(args);
+		else if(!args[ARG_MODE].compare(MODE_JSON2TEXTLOG,Qt::CaseInsensitive)) return consoleJsonlog(args);
 		else if(!args[ARG_MODE].compare(MODE_JSON2TEXTLOG_DIR,Qt::CaseInsensitive)) return consoleJsonlogDir(args);
 		else if(!args[ARG_MODE].compare(MODE_TEMPLATE2JSON_DIR,Qt::CaseInsensitive)) return consoleTemplateJsonDir(args);
 		else {
