@@ -57,6 +57,8 @@ int textlog2tavernai( const QMap< QString, QString > &args );
 int json2tavernai( const QMap< QString, QString > &args );
 int tavernai2textlog( const QMap< QString, QString > &args );
 int tavernai2json( const QMap< QString, QString > &args );
+int textlog2aitemplate( const QMap< QString, QString > &args );
+int json2aitemplate( const QMap< QString, QString > &args );
 
 static const QString ARG_MODE = QStringLiteral( "--mode" );
 static const QString ARG_IN = QStringLiteral( "--in" );
@@ -89,6 +91,8 @@ static const QString MODE_JSON2TAVERNAI = QStringLiteral( "json2tavernai" );
 static const QString MODE_TAVERNAI2TEXTLOG =
 	QStringLiteral( "tavernai2textlog" );
 static const QString MODE_TAVERNAI2JSON = QStringLiteral( "tavernai2json" );
+static const QString MODE_TEXTLOG2AITEMPLATE = QStringLiteral( "textlog2aitemplate" );
+static const QString MODE_JSON2AITEMPLATE = QStringLiteral( "json2aitemplate" );
 static const QString TEXT_FILE = QStringLiteral("Text files (*.txt)");
 static const QString JSON_FILE = QStringLiteral("JSON files (*.json)");
 static const QString JSONL_FILE = QStringLiteral("JSONL files (*.jsonl)");
@@ -231,7 +235,25 @@ static const QMap< QString, Mode > ModeMap = {
 	.needsGuid = false,
 	.needsChid = false,
 		.inPattern = JSONL_FILE,
-		.outPattern = JSON_FILE } } };
+		.outPattern = JSON_FILE } },
+	{ MODE_TEXTLOG2AITEMPLATE,
+	  { .function = textlog2aitemplate,
+	.needsOutput = true,
+	.worksWithDirectories = false,
+	.needsPlayerName = true,
+	.needsGuid = false,
+	.needsChid = false,
+		.inPattern = TEXT_FILE,
+		.outPattern = TEXT_FILE } },
+	{ MODE_JSON2AITEMPLATE,
+	  { .function = json2aitemplate,
+	.needsOutput = true,
+	.worksWithDirectories = false,
+	.needsPlayerName = true,
+	.needsGuid = false,
+	.needsChid = false,
+		.inPattern = JSON_FILE,
+		.outPattern = TEXT_FILE } } };
 
 static QTextStream STDOUT( stdout );
 
@@ -281,11 +303,11 @@ int main( int argc, char *argv[] ) {
 	{
 		args.insert(ARG_PLAYERNAME,QInputDialog::getText(nullptr,QStringLiteral("Insert Player Name"),QStringLiteral("Player Name")));
 	}
-	if(!args.contains( ARG_PLAYERUID ) && mode.needsPlayerName )
+	if(!args.contains( ARG_PLAYERUID ) && mode.needsGuid )
 	{
 		args.insert(ARG_PLAYERUID,QInputDialog::getText(nullptr,QStringLiteral("Insert Player UUID"),QStringLiteral("Player UUID")));
 	}
-	if(!args.contains( ARG_CHID ) && mode.needsPlayerName )
+	if(!args.contains( ARG_CHID ) && mode.needsChid )
 	{
 		args.insert(ARG_CHID,QString::number(QInputDialog::getInt(nullptr,QStringLiteral("Insert Character ID"),QStringLiteral("Character ID"))));
 	}
@@ -779,6 +801,100 @@ int tavernai2json( const QMap< QString, QString > &args ) {
 		tavernai.toRpgSession(sess);
 		QJsonDocument outJsonDocument(sess.toJson());
 		outF.write(outJsonDocument.toJson());
+		return 0;
+	} catch ( const std::exception &e )
+	{
+		handleException( e );
+		return -1;
+	}
+}
+
+void rpgLogToTemplate(QTextStream& strem2, const RpgSession& sess, const QStringList& playerNames )
+{
+	QStringList characterNames;
+	QTextDocument textdocument;
+	bool firstIter = false;
+	for(const auto& section : qAsConst(sess.getSections()))
+	{
+		if(firstIter) break;
+		for(const auto& post : qAsConst(section.getLogs()))
+		{
+			if(firstIter) break;
+			if(post.getUser() != playerNames[0] )
+			{
+				QString charname = post.getUser();
+				QString characterFirstname = charname.split(' ')[0];
+				if(!characterNames.contains(charname)) characterNames.push_back(charname);
+				if(!characterNames.contains(characterFirstname)) characterNames.push_back(characterFirstname);
+				firstIter = true;
+				break;
+			}
+		}
+	}
+	strem2 << "<START>\n";
+	for(const auto& section : qAsConst(sess.getSections()))
+	{
+		for(const auto& post : qAsConst(section.getLogs()))
+		{
+			bool isPlayerPost = post.getUser() == playerNames[0];
+			textdocument.setHtml(post.getContent());
+			QString content = textdocument.toMarkdown();
+			for(const auto& it : qAsConst(playerNames))
+				content = content.replace(it,QStringLiteral("{{user}}"));
+			for(const auto& it : qAsConst(characterNames))
+				content = content.replace(it,QStringLiteral("{{char}}"));
+			content = content.replace('\n',' ');
+			strem2 << (isPlayerPost ? "{{user}}" : "{{char}}") << ": " << content << '\n';
+		}
+	}
+	strem2.flush();
+}
+
+int textlog2aitemplate( const QMap< QString, QString > &args )
+{
+	try {
+		QString in = args[ARG_IN];
+		QFile inF( in );
+		if ( !inF.open( QFile::ReadOnly ) ) {
+			throw QFileException( in, QFile::ReadOnly );
+		}
+		QString out = args[ARG_OUT];
+		QFile outF( out );
+		if ( !outF.open( QFile::WriteOnly ) ) {
+			throw QFileException( out, QFile::WriteOnly );
+		}
+		QStringList playerNames = { args[ARG_PLAYERNAME], args[ARG_PLAYERNAME].split(' ')[0] };
+		RpgSession sess;
+		QTextStream strem( &inF );
+		sess.fromString( strem );
+		QTextStream strem2( &outF );
+		rpgLogToTemplate(strem2,sess,playerNames);
+		return 0;
+	} catch ( const std::exception &e )
+	{
+		handleException( e );
+		return -1;
+	}
+}
+int json2aitemplate( const QMap< QString, QString > &args )
+{
+	try {
+		QString in = args[ARG_IN];
+		QFile inF( in );
+		if ( !inF.open( QFile::ReadOnly ) ) {
+			throw QFileException( in, QFile::ReadOnly );
+		}
+		QString out = args[ARG_OUT];
+		QFile outF( out );
+		if ( !outF.open( QFile::WriteOnly ) ) {
+			throw QFileException( out, QFile::WriteOnly );
+		}
+		QStringList playerNames = { args[ARG_PLAYERNAME], args[ARG_PLAYERNAME].split(' ')[0] };
+		RpgSession sess;
+		QJsonDocument injson = QJsonDocument::fromJson( inF.readAll() );
+		sess.fromJson(injson.array() );
+		QTextStream strem2( &outF );
+		rpgLogToTemplate(strem2,sess,playerNames);
 		return 0;
 	} catch ( const std::exception &e )
 	{
