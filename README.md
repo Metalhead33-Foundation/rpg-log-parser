@@ -11,3 +11,13 @@ It is run as `./RplogParser --mode <MODE> --in <INPUT FILE/DIRECTORY PATH> --out
 * `json2textlogDIR`: parses a directory full of JSON files, and outputs MediaWiki-formatted RPG log files into a given directory
 * `template2jsonDIR`: parses a directory full of RPG post templates, and outputs a JSON file containing said post templates.
 * `dateparsetest`: simply tests, if there are any malformed dates within the RPG session that cannot be parsed to proper dates.
+* `discord2textlog`: Converts Discord JSON logs into MediaWiki-formatted RPG logs
+* `discord2jsonlog`: Converts Discord JSON logs into JSON RPG logs
+* `textlog2agnaistic`: Converts MediaWiki-formatted RPG logs and converts them into Agnaistic JSON logs, so you can fool the AI into thinking it wrote your RPG logs and continue it. Needs the additional arguments `--playername` and `--playeruid` to work.
+* `json2agnaistic`: Converts JSON RPG logs and converts them into Agnaistic JSON logs, so you can fool the AI into thinking it wrote your RPG logs and continue it. Needs the additional arguments `--playername` and `--playeruid` to work.
+* `agnaistic2textlog`: Takes Agnaistic JSON logs and converts them into MediaWiki RPG logs.
+* `agnaistic2json`: Takes Agnaistic JSON logs and converts them into JSON RPG logs.
+* `textlog2tavernai`: Converts MediaWiki-formatted RPG logs and converts them into TavernAI JSON logs, so you can fool the AI into thinking it wrote your RPG logs and continue it.  Needs the additional arguments `--playername` and `--chid` to work.
+* `json2tavernai`: Converts JSON RPG logs and converts them into TavernAI JSON logs, so you can fool the AI into thinking it wrote your RPG logs and continue it. Needs the additional arguments `--playername` and `--chid` to work.
+* `tavernai2textlog`: Takes TavernAI JSON logs and converts them into MediaWiki RPG logs.
+* `tavernai2json`: Takes TavernAI JSON logs and converts them into JSON RPG logs.
