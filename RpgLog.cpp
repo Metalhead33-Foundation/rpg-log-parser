@@ -421,6 +421,62 @@ QDateTime RpgLog::attemptToStreamlineDate(DateFormat format)
 		if(!tokens[4].compare(QStringLiteral("pm"),Qt::CaseInsensitive)) time.addSecs(60 * 60 * 12);
 		return QDateTime(QDate(y,m,d),time,QTimeZone::systemTimeZone());
 	}
+	case QtHun: // Szo márc. 12 19:01:45 2022
+	{
+		QStringList tokens = this->date.toString().replace(QStringLiteral("."),QChar(' ')).replace(QStringLiteral(":"),QChar(' ')).split(QChar(' '),Qt::SkipEmptyParts);
+		if(tokens.size() < 7) return QDateTime();
+		bool okay = true;
+		// Day of Week = 0
+		// Month = 1
+		int m = 0;
+		if(tokens[1].startsWith("jan",Qt::CaseInsensitive)) {
+			m = 1;
+		} else if(tokens[1].startsWith("feb",Qt::CaseInsensitive)) {
+			m = 2;
+		} else if(tokens[1].startsWith("már",Qt::CaseInsensitive)) {
+			m = 3;
+		} else if(tokens[1].startsWith("ápr",Qt::CaseInsensitive)) {
+			m = 4;
+		} else if(tokens[1].startsWith("máj",Qt::CaseInsensitive)) {
+			m = 5;
+		} else if(tokens[1].startsWith("jún",Qt::CaseInsensitive)) {
+			m = 6;
+		} else if(tokens[1].startsWith("júl",Qt::CaseInsensitive)) {
+			m = 7;
+		} else if(tokens[1].startsWith("aug",Qt::CaseInsensitive)) {
+			m = 8;
+		} else if(tokens[1].startsWith("sze",Qt::CaseInsensitive)) {
+			m = 9;
+		} else if(tokens[1].startsWith("okt",Qt::CaseInsensitive)) {
+			m = 10;
+		} else if(tokens[1].startsWith("nov",Qt::CaseInsensitive)) {
+			m = 11;
+		} else if(tokens[1].startsWith("dec",Qt::CaseInsensitive)) {
+			m = 12;
+		} else {
+			return QDateTime();
+		}
+		// Day of Month = 2
+		int dayOfMonth = tokens[2].toInt(&okay);
+		if(!okay) return QDateTime();
+		// Hour = 3
+		int hour = tokens[3].toInt(&okay);
+		if(!okay) return QDateTime();
+		// Minute = 4
+		int minute = tokens[4].toInt(&okay);
+		if(!okay) return QDateTime();
+		// Second = 5
+		int second = tokens[5].toInt(&okay);
+		if(!okay) return QDateTime();
+		// Year = 6
+		int year = tokens[6].toInt(&okay);
+		if(okay) return QDateTime(QDate(year,m,dayOfMonth),QTime(hour,minute,second));
+		else return QDateTime();
+	}
+	case QtRegular:
+	{
+		return QDateTime::fromString(this->date.toString());
+	}
 	default:
 		return QDateTime();
 	}

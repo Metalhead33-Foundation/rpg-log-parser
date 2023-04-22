@@ -24,6 +24,8 @@ public:
 		AoB,
 		FListPriv,
 		Litphoria,
+		QtHun,
+		QtRegular,
 		Invalid
 	};
 	RpgLog();
