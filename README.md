@@ -10,3 +10,4 @@ It is run as `./RplogParser --mode <MODE> --in <INPUT FILE/DIRECTORY PATH> --out
 * `json2textlog`: parses a single JSON file, and outputs a MediaWiki-formatted RPG log file
 * `json2textlogDIR`: parses a directory full of JSON files, and outputs MediaWiki-formatted RPG log files into a given directory
 * `template2jsonDIR`: parses a directory full of RPG post templates, and outputs a JSON file containing said post templates.
+* `dateparsetest`: simply tests, if there are any malformed dates within the RPG session that cannot be parsed to proper dates.
