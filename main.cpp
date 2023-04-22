@@ -26,6 +26,7 @@ int consoleTextlogDir(const QMap<QString,QString>& args);
 int consoleJsonlog(const QMap<QString,QString>& args);
 int consoleJsonlogDir(const QMap<QString,QString>& args);
 int consoleTemplateJsonDir(const QMap<QString,QString>& args);
+int consoleDateParseTest(const QMap<QString,QString>& args);
 
 static const QString ARG_MODE = QStringLiteral("--mode");
 static const QString ARG_IN = QStringLiteral("--in");
@@ -36,8 +37,11 @@ static const QString MODE_TEXTLOG2JSON_DIR = QStringLiteral("textlog2jsonDIR");
 static const QString MODE_JSON2TEXTLOG = QStringLiteral("json2textlog");
 static const QString MODE_JSON2TEXTLOG_DIR = QStringLiteral("json2textlogDIR");
 static const QString MODE_TEMPLATE2JSON_DIR = QStringLiteral("template2jsonDIR");
+static const QString MODE_DATEPARSETEST = QStringLiteral("dateparsetest");
 
-static const QStringList MODES = { MODE_TEXTLOG2JSON, MODE_TEXTLOG2JSON_DIR, MODE_JSON2TEXTLOG, MODE_JSON2TEXTLOG_DIR, MODE_TEMPLATE2JSON_DIR };
+static const QStringList MODES = { MODE_TEXTLOG2JSON, MODE_TEXTLOG2JSON_DIR, MODE_JSON2TEXTLOG, MODE_JSON2TEXTLOG_DIR, MODE_TEMPLATE2JSON_DIR, MODE_DATEPARSETEST };
+
+static QTextStream STDOUT(stdout);
 
 int main(int argc, char *argv[])
 {
@@ -45,7 +49,7 @@ int main(int argc, char *argv[])
 	for(int i = 1; i < (argc - 1); i += 2) {
 		args.insert(QString::fromUtf8(argv[i]).trimmed(),QString::fromUtf8(argv[i+1]).trimmed());
 	}
-	if(!args.contains(ARG_MODE) || !args.contains(ARG_IN) || !args.contains(ARG_OUT)) {
+	if(!args.contains(ARG_MODE) || !args.contains(ARG_IN)) {
 		windowMode = true;
 		QApplication a(argc, argv);
 		args.insert(ARG_MODE,QInputDialog::getItem(nullptr,QStringLiteral("Select mode"),QStringLiteral("Mode:"),MODES,0,false));
@@ -54,6 +58,7 @@ int main(int argc, char *argv[])
 			args.insert(ARG_MODE,QInputDialog::getItem(nullptr,QStringLiteral("Select mode"),QStringLiteral("Mode:"),MODES,0,false));
 		}
 		if(!args.contains(ARG_IN)) {
+			windowMode = true;
 			if(!args[ARG_MODE].compare(MODE_TEXTLOG2JSON,Qt::CaseInsensitive))
 				args.insert(ARG_IN,QFileDialog::getOpenFileName(nullptr, QStringLiteral("Open File"),
 					QString(), QStringLiteral("Text files (*.txt)")));
@@ -69,8 +74,12 @@ int main(int argc, char *argv[])
 			else if(!args[ARG_MODE].compare(MODE_TEMPLATE2JSON_DIR,Qt::CaseInsensitive))
 				args.insert(ARG_IN,QFileDialog::getExistingDirectory(nullptr, QStringLiteral("Open Directory (for reading)"),
 					QString()));
+			else if(!args[ARG_MODE].compare(MODE_DATEPARSETEST,Qt::CaseInsensitive))
+				args.insert(ARG_IN,QFileDialog::getOpenFileName(nullptr, QStringLiteral("Open File"),
+					QString(), QStringLiteral("Text files (*.txt)")));
 		}
-		if(!args.contains(ARG_OUT)) {
+		if(!args.contains(ARG_OUT) && args[ARG_MODE].compare(MODE_DATEPARSETEST,Qt::CaseInsensitive)) {
+			windowMode = true;
 			if(!args[ARG_MODE].compare(MODE_TEXTLOG2JSON,Qt::CaseInsensitive))
 				args.insert(ARG_OUT,QFileDialog::getSaveFileName(nullptr, QStringLiteral("Save File"),
 					QString(), QStringLiteral("JSON files (*.json)")));
@@ -100,14 +109,15 @@ int main(int argc, char *argv[])
 }
 
 int handle(const QMap<QString,QString>& args) {
-	if(args.contains(ARG_IN) && args.contains(ARG_OUT)) {
+	if(!args[ARG_MODE].compare(MODE_DATEPARSETEST,Qt::CaseInsensitive)) return consoleDateParseTest(args);
+	else if(args.contains(ARG_IN) && args.contains(ARG_OUT)) {
 		if(!args[ARG_MODE].compare(MODE_TEXTLOG2JSON,Qt::CaseInsensitive)) return consoleTextlog(args);
 		else if(!args[ARG_MODE].compare(MODE_TEXTLOG2JSON_DIR,Qt::CaseInsensitive)) return consoleTextlogDir(args);
 		else if(!args[ARG_MODE].compare(MODE_JSON2TEXTLOG,Qt::CaseInsensitive)) return consoleJsonlog(args);
 		else if(!args[ARG_MODE].compare(MODE_JSON2TEXTLOG_DIR,Qt::CaseInsensitive)) return consoleJsonlogDir(args);
 		else if(!args[ARG_MODE].compare(MODE_TEMPLATE2JSON_DIR,Qt::CaseInsensitive)) return consoleTemplateJsonDir(args);
 		else {
-			std::cout << "Unsupported mode!" << std::endl;
+			STDOUT << "Unsupported mode!\n";
 		}
 	}
 	return 0;
@@ -116,7 +126,7 @@ void handleException(const std::exception& e) {
 	if(windowMode) {
 		QMessageBox::critical(nullptr,QStringLiteral("Exception encountered"),QString::fromUtf8(e.what()));
 	} else {
-		std::cout << "Error encountered!\n" << e.what() << std::endl;
+		STDOUT << "Error encountered!\n" << e.what() << "\n";
 	}
 }
 
@@ -252,3 +262,46 @@ int consoleTemplateJsonDir(const QMap<QString,QString>& args) {
 	return 0;
 
 }
+int consoleDateParseTest(const QMap<QString,QString>& args)
+{
+	try {
+		QString in = args[ARG_IN];
+		QFile inF(in);
+		if(!inF.open(QFile::ReadOnly)) {
+			throw QFileException(in, QFile::ReadOnly);
+		}
+		RpgSession sess;
+		QTextStream strem(&inF);
+		sess.fromString(strem);
+		QStringList unparsedDates;
+		for(const auto& section : qAsConst(sess.getSections()))
+		{
+			for(const auto& post : qAsConst(section.getLogs()))
+			{
+				if(post.getDate().type() == QVariant::String) unparsedDates.push_back(post.getDate().toString());
+			}
+		}
+		if(unparsedDates.empty())
+		{
+			if(windowMode) {
+				QMessageBox::information(nullptr,QStringLiteral("Success!"),QStringLiteral("No unparsed dates were found."));
+			} else {
+				STDOUT << "No misformed, unparsed dates found!!\n";
+			}
+		}
+		else {
+			QString unparsedList = unparsedDates.join('\n');
+			if(windowMode) {
+				QMessageBox::warning(nullptr,QStringLiteral("Unparsed dates found"),QStringLiteral("The following dates could not be parsed:\n%1").arg(unparsedList));
+			} else {
+				STDOUT << "The following dates could not be parsed:\n" << unparsedList << "\n";
+			}
+		}
+		return 0;
+	}
+	catch (const std::exception& e) {
+		handleException(e);
+		return -1;
+	}
+}
+
