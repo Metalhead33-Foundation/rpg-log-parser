@@ -5,6 +5,7 @@
 #include <QTextDocument>
 #include "HtmlHeader.hpp"
 #include "RpgSession.hpp"
+#include "HtmlToMarkdown.hpp"
 
 void TavernAiConversationHeader::toJson(QJsonObject& json) const
 {
@@ -147,7 +148,6 @@ void TavernAiConversation::fromJsonL(QTextStream& strm)
 
 void TavernAiConversation::fromRpgSession(const RpgSession& session, const QString& playerName, int chid)
 {
-	QTextDocument document;
 	for(const auto& section : session.getSections() )
 	{
 		for(const auto& post : section.getLogs())
@@ -168,8 +168,7 @@ void TavernAiConversation::fromRpgSession(const RpgSession& session, const QStri
 			}
 			msg.send_date = post.getDate().toDateTime().toUTC().toMSecsSinceEpoch();
 			msg.chid = msg.is_name ? chid : -1;
-			document.setHtml(post.getContent());
-			msg.mes = document.toMarkdown();
+			msg.mes = htmlToMarkdown(post.getContent());
 			messages.push_back(msg);
 		}
 	}
@@ -184,6 +183,7 @@ void TavernAiConversation::fromRpgSession(const RpgSession& session, const QStri
 void TavernAiConversation::toRpgSession(RpgSession& session) const
 {
 	QTextDocument document;
+	document.setTextWidth(-1);
 	RpgSection section;
 	section.setSectionName("AI scene");
 	for(const auto& it : qAsConst(messages))
@@ -193,6 +193,7 @@ void TavernAiConversation::toRpgSession(RpgSession& session) const
 		log.setUser(it.name);
 		log.setDate(QDateTime::fromMSecsSinceEpoch(it.send_date));
 		document.setMarkdown(it.mes);
+		document.setTextWidth(-1);
 		log.setContent(document.toHtml().remove(HtmlHeader).remove(HtmlFooter).remove(UnnecessaryFormatting));
 		section.getLogs().push_back(log);
 	}

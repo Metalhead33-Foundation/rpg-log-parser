@@ -14,6 +14,7 @@
 #include <iostream>
 #include <QTextDocument>
 #include "HtmlHeader.hpp"
+#include "HtmlToMarkdown.hpp"
 
 void text2json( QIODevice &in, QIODevice &out ) {
 	RpgSession sess;
@@ -812,7 +813,6 @@ int tavernai2json( const QMap< QString, QString > &args ) {
 void rpgLogToTemplate(QTextStream& strem2, const RpgSession& sess, const QStringList& playerNames )
 {
 	QStringList characterNames;
-	QTextDocument textdocument;
 	bool firstIter = false;
 	for(const auto& section : qAsConst(sess.getSections()))
 	{
@@ -837,8 +837,7 @@ void rpgLogToTemplate(QTextStream& strem2, const RpgSession& sess, const QString
 		for(const auto& post : qAsConst(section.getLogs()))
 		{
 			bool isPlayerPost = post.getUser() == playerNames[0];
-			textdocument.setHtml(post.getContent());
-			QString content = textdocument.toMarkdown();
+			QString content = htmlToMarkdown(post.getContent());
 			for(const auto& it : qAsConst(playerNames))
 				content = content.replace(it,QStringLiteral("{{user}}"));
 			for(const auto& it : qAsConst(characterNames))

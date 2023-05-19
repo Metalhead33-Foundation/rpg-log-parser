@@ -1,8 +1,9 @@
 #include "Agnaistic.hpp"
 #include <QJsonArray>
 #include "RpgSession.hpp"
-#include <QTextDocument>
+#include "HtmlToMarkdown.hpp"
 #include "HtmlHeader.hpp"
+#include <QTextDocument>
 
 const QString& AgnaisticMsg::getMsg() const
 {
@@ -175,7 +176,6 @@ void AgnaisticRpgScene::fromRpgSession(const RpgSession& session, QUuid userId, 
 	greeting = QStringLiteral("Replace this with whatever you want");
 	sampleChat = QStringLiteral("Replace this with whatever you want");
 	scenario = QStringLiteral("Replace this with whatever you want");
-	QTextDocument document;
 	for(const auto& section : session.getSections() )
 	{
 		for(const auto& post : section.getLogs())
@@ -191,8 +191,7 @@ void AgnaisticRpgScene::fromRpgSession(const RpgSession& session, QUuid userId, 
 			{
 				msg.setCharacterId("imported");
 			}
-			document.setHtml(post.getContent());
-			msg.setMsg(document.toMarkdown());
+			msg.setMsg(htmlToMarkdown(post.getContent()));
 			messages.push_back(msg);
 		}
 	}
