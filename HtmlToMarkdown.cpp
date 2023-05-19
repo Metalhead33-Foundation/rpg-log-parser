@@ -15,6 +15,6 @@ QString htmlToMarkdown(const QString& html)
 	}
 	QTextDocument document;
 	document.setHtml(doc);
-	doc = document.toMarkdown(QTextDocument::MarkdownFeature::MarkdownNoHTML).replace(QStringLiteral("\n"),"").replace('\x13','\n').trimmed();
+	doc = document.toMarkdown(QTextDocument::MarkdownFeature::MarkdownNoHTML).replace('\n',' ').replace('\x13','\n').trimmed();
 	return doc;
 }
