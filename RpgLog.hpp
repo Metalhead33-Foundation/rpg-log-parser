@@ -26,6 +26,10 @@ public:
 		Litphoria,
 		QtHun,
 		QtRegular,
+		Dotted,
+		SillyTavern1,
+		SillyTavern2,
+		SillyTavern3,
 		Invalid
 	};
 	RpgLog();

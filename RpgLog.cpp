@@ -133,6 +133,11 @@ void RpgLog::attemptToStreamlineDate()
 
 }
 
+static const QString dateFormat1 = QStringLiteral("yyyy-M-d @hh'h' mm'm' ss's' zzz'ms'");
+static const QString dateFormat2 = QStringLiteral("yyyy-MM-ddTHH:mm:ss.zzzZ");
+static const QString dateFormat3 = QStringLiteral("MMMM d, yyyy h:mmap");
+static const QLocale AmericanLocale = QLocale(QLocale::English,QLocale::UnitedStates);
+
 QDateTime RpgLog::attemptToStreamlineDate(DateFormat format)
 {
 	if(this->date.type() == QVariant::DateTime) return this->date.toDateTime();
@@ -477,6 +482,22 @@ QDateTime RpgLog::attemptToStreamlineDate(DateFormat format)
 	case QtRegular:
 	{
 		return QDateTime::fromString(this->date.toString());
+	}
+	case Dotted:
+	{
+		return QDateTime::fromString(this->date.toString(), QStringLiteral("yyyy. MM. dd. hh:mm:ss"));
+	}
+	case SillyTavern1:
+	{
+		return QDateTime::fromString(this->date.toString(),dateFormat1);
+	}
+	case SillyTavern2:
+	{
+		return QDateTime::fromString(this->date.toString(),dateFormat2);
+	}
+	case SillyTavern3:
+	{
+		return AmericanLocale.toDateTime(this->date.toString(),dateFormat3);
 	}
 	default:
 		return QDateTime();

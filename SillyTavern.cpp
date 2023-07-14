@@ -363,7 +363,7 @@ void SillyTavernConversaiton::fromRpgSession(const RpgSession &session, const QS
 			msg.is_user = msg.name == playerName;
 			msg.is_name = !msg.is_user;
 			msg.force_avatar = msg.is_user ? forceAvatarForPlayer : QString();
-			msg.send_date = (log.getDate().metaType().id() == QMetaType::QDateTime) ? log.getDate().toDateTime() : QDateTime::currentDateTime().addSecs(-240 * chatDepth);
+			msg.send_date = (log.getDate().toDateTime().isValid()) ? log.getDate().toDateTime() : QDateTime::currentDateTime().addSecs(-240 * chatDepth);
 			if(msg.is_name)
 			{
 				msg.gen_finished = msg.send_date;
@@ -375,6 +375,7 @@ void SillyTavernConversaiton::fromRpgSession(const RpgSession &session, const QS
 			messages.push_back(msg);
 		}
 	}
+	if(messages.size()) header.create_date = messages[0].send_date;
 }
 
 /*
