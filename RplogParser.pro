@@ -17,6 +17,7 @@ SOURCES += \
         RpgPostWidget.cpp \
         RpgSection.cpp \
         RpgSession.cpp \
+        SillyTavern.cpp \
         TavernAI.cpp \
         main.cpp
 
@@ -35,6 +36,7 @@ HEADERS += \
 	RpgPostWidget.hpp \
 	RpgSection.hpp \
 	RpgSession.hpp \
+	SillyTavern.h \
 	TavernAI.hpp
 
 FORMS += \

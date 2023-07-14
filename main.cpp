@@ -3,6 +3,7 @@
 #include "RpgSession.hpp"
 #include "TavernAI.hpp"
 #include "Agnaistic.hpp"
+#include "SillyTavern.h"
 #include <QApplication>
 #include <QFile>
 #include <QFileDialog>
@@ -58,6 +59,10 @@ int textlog2tavernai( const QMap< QString, QString > &args );
 int json2tavernai( const QMap< QString, QString > &args );
 int tavernai2textlog( const QMap< QString, QString > &args );
 int tavernai2json( const QMap< QString, QString > &args );
+int textlog2sillytavern( const QMap< QString, QString > &args );
+int json2sillytavern( const QMap< QString, QString > &args );
+int sillytavern2textlog( const QMap< QString, QString > &args );
+int sillytavern2json( const QMap< QString, QString > &args );
 int textlog2aitemplate( const QMap< QString, QString > &args );
 int json2aitemplate( const QMap< QString, QString > &args );
 
@@ -94,6 +99,12 @@ static const QString MODE_TAVERNAI2TEXTLOG =
 static const QString MODE_TAVERNAI2JSON = QStringLiteral( "tavernai2json" );
 static const QString MODE_TEXTLOG2AITEMPLATE = QStringLiteral( "textlog2aitemplate" );
 static const QString MODE_JSON2AITEMPLATE = QStringLiteral( "json2aitemplate" );
+static const QString MODE_TEXTLOG2SILLYTAVERN =
+	QStringLiteral( "textlog2sillytavern" );
+static const QString MODE_JSON2SILLYTAVERN = QStringLiteral( "json2sillytavern" );
+static const QString MODE_SILLYTAVERN2TEXTLOG =
+	QStringLiteral( "sillytavern2textlog" );
+static const QString MODE_SILLYTAVERN2JSON = QStringLiteral( "sillytavern2json" );
 static const QString TEXT_FILE = QStringLiteral("Text files (*.txt)");
 static const QString JSON_FILE = QStringLiteral("JSON files (*.json)");
 static const QString JSONL_FILE = QStringLiteral("JSONL files (*.jsonl)");
@@ -254,7 +265,43 @@ static const QMap< QString, Mode > ModeMap = {
 	.needsGuid = false,
 	.needsChid = false,
 		.inPattern = JSON_FILE,
-		.outPattern = TEXT_FILE } } };
+		.outPattern = TEXT_FILE } },
+	{ MODE_TEXTLOG2SILLYTAVERN,
+	  { .function = textlog2sillytavern,
+	.needsOutput = true,
+	.worksWithDirectories = false,
+	.needsPlayerName = true,
+	.needsGuid = false,
+	.needsChid = false,
+		.inPattern = TEXT_FILE,
+		.outPattern = JSONL_FILE } },
+	{ MODE_JSON2SILLYTAVERN,
+	  { .function = json2sillytavern,
+	.needsOutput = true,
+	.worksWithDirectories = false,
+	.needsPlayerName = true,
+	.needsGuid = false,
+	.needsChid = false,
+		.inPattern = JSON_FILE,
+		.outPattern = JSONL_FILE } },
+	{ MODE_SILLYTAVERN2TEXTLOG,
+	  { .function = sillytavern2textlog,
+	.needsOutput = true,
+	.worksWithDirectories = false,
+	.needsPlayerName = false,
+	.needsGuid = false,
+	.needsChid = false,
+		.inPattern = JSONL_FILE,
+		.outPattern = TEXT_FILE } },
+	{ MODE_SILLYTAVERN2JSON,
+	  { .function = sillytavern2json,
+	.needsOutput = true,
+	.worksWithDirectories = false,
+	.needsPlayerName = false,
+	.needsGuid = false,
+	.needsChid = false,
+		.inPattern = JSONL_FILE,
+		.outPattern = JSON_FILE } }};
 
 static QTextStream STDOUT( stdout );
 
@@ -894,6 +941,111 @@ int json2aitemplate( const QMap< QString, QString > &args )
 		sess.fromJson(injson.array() );
 		QTextStream strem2( &outF );
 		rpgLogToTemplate(strem2,sess,playerNames);
+		return 0;
+	} catch ( const std::exception &e )
+	{
+		handleException( e );
+		return -1;
+	}
+}
+
+int sillytavern2textlog( const QMap< QString, QString > &args ) {
+	try {
+		QString in = args[ARG_IN];
+		QFile inF( in );
+		if ( !inF.open( QFile::ReadOnly ) ) {
+			throw QFileException( in, QFile::ReadOnly );
+		}
+		QString out = args[ARG_OUT];
+		QFile outF( out );
+		if ( !outF.open( QFile::WriteOnly ) ) {
+			throw QFileException( out, QFile::WriteOnly );
+		}
+		RpgSession sess;
+		SillyTavernConversaiton sillytavern;
+		QTextStream strem( &inF );
+		sillytavern.fromJsonL( strem );
+		sillytavern.toRpgSession(sess);
+		QTextStream strem2( &outF );
+		sess.toString(strem2);
+		return 0;
+	} catch ( const std::exception &e )
+	{
+		handleException( e );
+		return -1;
+	}
+}
+int sillytavern2json( const QMap< QString, QString > &args ) {
+	try {
+		QString in = args[ARG_IN];
+		QFile inF( in );
+		if ( !inF.open( QFile::ReadOnly ) ) {
+			throw QFileException( in, QFile::ReadOnly );
+		}
+		QString out = args[ARG_OUT];
+		QFile outF( out );
+		if ( !outF.open( QFile::WriteOnly ) ) {
+			throw QFileException( out, QFile::WriteOnly );
+		}
+		RpgSession sess;
+		SillyTavernConversaiton sillytavern;
+		QTextStream strem( &inF );
+		sillytavern.fromJsonL( strem );
+		sillytavern.toRpgSession(sess);
+		QJsonDocument outJsonDocument(sess.toJson());
+		outF.write(outJsonDocument.toJson());
+		return 0;
+	} catch ( const std::exception &e )
+	{
+		handleException( e );
+		return -1;
+	}
+}
+int textlog2sillytavern( const QMap< QString, QString > &args ) {
+	try {
+		QString in = args[ARG_IN];
+		QFile inF( in );
+		if ( !inF.open( QFile::ReadOnly ) ) {
+			throw QFileException( in, QFile::ReadOnly );
+		}
+		QString out = args[ARG_OUT];
+		QFile outF( out );
+		if ( !outF.open( QFile::WriteOnly ) ) {
+			throw QFileException( out, QFile::WriteOnly );
+		}
+		RpgSession sess;
+		QTextStream strem( &inF );
+		sess.fromString( strem );
+		SillyTavernConversaiton sillytavern;
+		sillytavern.fromRpgSession(sess, args[ARG_PLAYERNAME]);
+		QTextStream strem2( &outF );
+		sillytavern.toJsonL(strem2);
+		return 0;
+	} catch ( const std::exception &e )
+	{
+		handleException( e );
+		return -1;
+	}
+}
+int json2sillytavern( const QMap< QString, QString > &args ) {
+	try {
+		QString in = args[ARG_IN];
+		QFile inF( in );
+		if ( !inF.open( QFile::ReadOnly ) ) {
+			throw QFileException( in, QFile::ReadOnly );
+		}
+		QString out = args[ARG_OUT];
+		QFile outF( out );
+		if ( !outF.open( QFile::WriteOnly ) ) {
+			throw QFileException( out, QFile::WriteOnly );
+		}
+		RpgSession sess;
+		QJsonDocument injson = QJsonDocument::fromJson( inF.readAll() );
+		sess.fromJson(injson.array() );
+		SillyTavernConversaiton sillytavern;
+		sillytavern.fromRpgSession(sess, args[ARG_PLAYERNAME]);
+		QTextStream strem2( &outF );
+		sillytavern.toJsonL(strem2);
 		return 0;
 	} catch ( const std::exception &e )
 	{

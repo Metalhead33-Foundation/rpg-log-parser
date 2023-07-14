@@ -21,5 +21,9 @@ It is run as `./RplogParser --mode <MODE> --in <INPUT FILE/DIRECTORY PATH> --out
 * `json2tavernai`: Converts JSON RPG logs and converts them into TavernAI JSON logs, so you can fool the AI into thinking it wrote your RPG logs and continue it. Needs the additional arguments `--playername` and `--chid` to work.
 * `tavernai2textlog`: Takes TavernAI JSON logs and converts them into MediaWiki RPG logs.
 * `tavernai2json`: Takes TavernAI JSON logs and converts them into JSON RPG logs.
+* `textlog2sillytavern`: Converts MediaWiki-formatted RPG logs and converts them into SillyTavern JSON logs, so you can fool the AI into thinking it wrote your RPG logs and continue it.  Needs the additional arguments `--playername` to work.
+* `json2sillytavern`: Converts JSON RPG logs and converts them into SillyTavern JSON logs, so you can fool the AI into thinking it wrote your RPG logs and continue it. Needs the additional arguments `--playername`  to work.
+* `sillytavern2textlog`: Takes SillyTavern JSON logs and converts them into MediaWiki RPG logs.
+* `sillytavern2json`: Takes SillyTavern JSON logs and converts them into JSON RPG logs.
 * `textlog2aitemplate`: Takes a MediaWiki-formatted RPG session and converts into an example conversation for giving an AI more presonality. Needs the extra argument `--playername`.
 * `json2aitemplate`: Takes a JSON-formatted RPG session and converts into an example conversation for giving an AI more presonality. Needs the extra argument `--playername`.

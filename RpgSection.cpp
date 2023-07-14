@@ -1,5 +1,6 @@
 #include "RpgSection.hpp"
 #include <QLocale>
+#include <QIODevice>
 
 const QList<RpgLog>& RpgSection::getLogs() const
 {

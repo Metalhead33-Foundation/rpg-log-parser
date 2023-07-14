@@ -1,4 +1,5 @@
 #include "RpgSession.hpp"
+#include <QIODevice>
 
 const QList<RpgSection>& RpgSession::getSections() const
 {

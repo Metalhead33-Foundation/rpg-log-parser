@@ -1,5 +1,6 @@
 #include "RpgLog.hpp"
 #include <QTimeZone>
+#include <QIODevice>
 
 const QString& RpgLog::getUser() const
 {
@@ -99,7 +100,7 @@ void RpgLog::fromString(QTextStream& stream)
 		} else if(lastRead.startsWith(CONTENT_START)) {
 			this->content = lastRead.mid(CONTENT_START.size()).append(QChar('\n'));
 		} else if(lastRead.endsWith(POST_END)) {
-			this->content = this->content.append(lastRead.leftRef(lastRead.size() - POST_END.size()));
+			this->content = this->content.append(lastRead.left(lastRead.size() - POST_END.size()));
 			return;
 		} else if(!lastRead.compare(POST_HUN)) {
 			this->hun = true;
