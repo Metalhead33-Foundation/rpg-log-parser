@@ -116,7 +116,7 @@ void Header::fromJson(const QJsonObject &json)
 {
 	this->user_name = json[QStringLiteral("user_name")].toString();
 	this->character_name = json[QStringLiteral("character_name")].toString();
-	this->create_date = QDateTime::fromString(json[QStringLiteral("create_date")].toString(),dateFormat1);
+	this->create_date = QDateTime::fromString(json[QStringLiteral("create_date")].toString(),dateFormat1).toLocalTime();
 	this->chat_metadata.fromJson(json[QStringLiteral("chat_metadata")].toObject());
 }
 
@@ -152,7 +152,9 @@ void SwipeInfo::fromJson(const QJsonObject &json)
 {
 	this->send_date = AmericanLocale.toDateTime(json[QStringLiteral("send_date")].toString(),dateFormat3);
 	this->gen_started = QDateTime::fromString(json[QStringLiteral("gen_started")].toString(),dateFormat2);
+	this->gen_started.setTimeSpec(Qt::UTC);
 	this->gen_finished = QDateTime::fromString(json[QStringLiteral("gen_finished")].toString(),dateFormat2);
+	this->gen_finished.setTimeSpec(Qt::UTC);
 }
 
 SwipeInfo SwipeInfo::createFromJson(const QJsonObject &json)
@@ -217,7 +219,9 @@ void Message::fromJson(const QJsonObject &json)
 	this->force_avatar = json[QStringLiteral("force_avatar")].toString();
 	this->mes = json[QStringLiteral("mes")].toString();
 	this->gen_started = QDateTime::fromString(json[QStringLiteral("gen_started")].toString(),dateFormat2);
+	this->gen_started.setTimeSpec(Qt::UTC);
 	this->gen_finished = QDateTime::fromString(json[QStringLiteral("gen_finished")].toString(),dateFormat2);
+	this->gen_finished.setTimeSpec(Qt::UTC);
 	this->swipe_id = json[QStringLiteral("swipe_id")].toInt();
 	auto swipes = json[QStringLiteral("swipes")].toArray();
 	this->swipes.clear();
@@ -401,10 +405,10 @@ void SillyTavernConversaiton::toRpgSession(RpgSession &session) const
 			log.setUser(it.name);
 			document.setMarkdown(it.mes);
 			document.setTextWidth(-1);
-			log.setContent(document.toHtml().remove(HtmlHeader).remove(HtmlFooter).remove(UnnecessaryFormatting));
+			log.setContent(document.toHtml().mid(HtmlHeader.length()-2).remove(HtmlFooter).remove(UnnecessaryFormatting));
 			if(it.gen_finished.isValid()) {
-				log.setDate(it.gen_finished);
-				latest = it.gen_finished;
+				log.setDate(it.gen_finished.toLocalTime());
+				latest = it.gen_finished.toLocalTime();
 			}
 			else if(it.send_date.isValid())
 			{

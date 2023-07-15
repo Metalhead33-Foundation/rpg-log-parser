@@ -73,7 +73,7 @@ static const QString POST_END = QStringLiteral("}}");
 void RpgLog::toString(QTextStream& stream) const
 {
 	//stream << QStringLiteral("{{RPG Post/%1\n|date=%2\n|post=%3\n}}").arg(user).arg(date).arg(content);
-	stream << POST_START << user << '\n' << DATE_START << date.toString() << (hun ? POST_HUN_N : QStringLiteral("\n")) << CONTENT_START << content << '\n' << POST_END;
+	stream << POST_START << user << '\n' << DATE_START << (date.typeId() == QMetaType::QDateTime ? date.toDateTime().toString(Qt::DateFormat::TextDate) : date.toString()) << (hun ? POST_HUN_N : QStringLiteral("\n")) << CONTENT_START << content << '\n' << POST_END;
 }
 
 QString RpgLog::toString() const
