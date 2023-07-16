@@ -405,7 +405,7 @@ void SillyTavernConversaiton::toRpgSession(RpgSession &session) const
 			log.setUser(it.name);
 			document.setMarkdown(it.mes);
 			document.setTextWidth(-1);
-			log.setContent(document.toHtml().mid(HtmlHeader.length()-2).remove(HtmlFooter).remove(UnnecessaryFormatting));
+			log.setContent(document.toHtml().remove(HtmlHeader).remove(HtmlFooter).remove(UnnecessaryFormatting));
 			if(it.gen_finished.isValid()) {
 				log.setDate(it.gen_finished.toLocalTime());
 				latest = it.gen_finished.toLocalTime();
