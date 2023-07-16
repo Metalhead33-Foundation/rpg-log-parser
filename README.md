@@ -27,3 +27,35 @@ It is run as `./RplogParser --mode <MODE> --in <INPUT FILE/DIRECTORY PATH> --out
 * `sillytavern2json`: Takes SillyTavern JSON logs and converts them into JSON RPG logs.
 * `textlog2aitemplate`: Takes a MediaWiki-formatted RPG session and converts into an example conversation for giving an AI more presonality. Needs the extra argument `--playername`.
 * `json2aitemplate`: Takes a JSON-formatted RPG session and converts into an example conversation for giving an AI more presonality. Needs the extra argument `--playername`.
+
+## What is this MediaWiki log format that's being mentioned?
+
+it is the format for storing RPG logs on [my wiki](https://waysofdarkness.miraheze.org/wiki/Main_Page).
+
+```
+{{RPG Post/<poster's character name>
+|date=<post date>
+|post=<post content>
+}}
+```
+
+The alternate JSON format is:
+
+```json
+[
+    {
+        "posts": [
+            {
+                "content": "<post content>",
+                "date": "<post date>",
+                "hun": false,
+                "streamlinedDate": <true if we have a unix timestamp, false otherwise>,
+                "unixTimestamp": <post date converted to a Unix timestamp, optional>,
+                "user": "<character name>"
+            },
+            ...
+        ],
+        "sectionName": "[[Fort Redlight]] ''(near [[Grandfolk]])'', after a timeskip"
+    }
+]
+```
