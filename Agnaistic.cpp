@@ -2,7 +2,6 @@
 #include <QJsonArray>
 #include "RpgSession.hpp"
 #include "HtmlToMarkdown.hpp"
-#include "HtmlHeader.hpp"
 #include <QTextDocument>
 
 const QString& AgnaisticMsg::getMsg() const
@@ -199,7 +198,6 @@ void AgnaisticRpgScene::fromRpgSession(const RpgSession& session, QUuid userId, 
 
 void AgnaisticRpgScene::toRpgSession(RpgSession& session) const
 {
-	QTextDocument document;
 	RpgSection section;
 	section.setSectionName(name);
 	for(const auto& it : qAsConst(messages))
@@ -211,8 +209,7 @@ void AgnaisticRpgScene::toRpgSession(RpgSession& session) const
 		else
 			log.setUser(it.getHandle());
 		log.setDate(QDateTime::currentDateTime());
-		document.setMarkdown(it.getMsg());
-		log.setContent(document.toHtml().remove(HtmlHeader).remove(HtmlFooter).remove(UnnecessaryFormatting));
+		log.setContent(markdownToHtml(it.getMsg()));
 		section.getLogs().push_back(log);
 	}
 	session.getSections().clear();

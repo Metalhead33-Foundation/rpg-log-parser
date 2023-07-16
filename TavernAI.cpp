@@ -3,7 +3,6 @@
 #include <QJsonDocument>
 #include <QTextStream>
 #include <QTextDocument>
-#include "HtmlHeader.hpp"
 #include "RpgSession.hpp"
 #include "HtmlToMarkdown.hpp"
 
@@ -182,8 +181,6 @@ void TavernAiConversation::fromRpgSession(const RpgSession& session, const QStri
 
 void TavernAiConversation::toRpgSession(RpgSession& session) const
 {
-	QTextDocument document;
-	document.setTextWidth(-1);
 	RpgSection section;
 	section.setSectionName("AI scene");
 	for(const auto& it : qAsConst(messages))
@@ -192,9 +189,7 @@ void TavernAiConversation::toRpgSession(RpgSession& session) const
 		log.setHun(false);
 		log.setUser(it.name);
 		log.setDate(QDateTime::fromMSecsSinceEpoch(it.send_date));
-		document.setMarkdown(it.mes);
-		document.setTextWidth(-1);
-		log.setContent(document.toHtml().remove(HtmlHeader).remove(HtmlFooter).remove(UnnecessaryFormatting));
+		log.setContent(markdownToHtml(it.mes));
 		section.getLogs().push_back(log);
 	}
 	session.getSections().clear();

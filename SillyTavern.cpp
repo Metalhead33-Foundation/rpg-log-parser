@@ -1,5 +1,4 @@
 #include "SillyTavern.h"
-#include "HtmlHeader.hpp"
 #include "RpgSession.hpp"
 #include "HtmlToMarkdown.hpp"
 #include <QTextDocument>
@@ -392,7 +391,6 @@ void SillyTavernConversaiton::fromRpgSession(const RpgSession &session, const QS
 
 void SillyTavernConversaiton::toRpgSession(RpgSession &session) const
 {
-	QTextDocument document;
 	QList<RpgSection> sections;
 	{
 		RpgSection section;
@@ -403,9 +401,7 @@ void SillyTavernConversaiton::toRpgSession(RpgSession &session) const
 			RpgLog log;
 			log.setHun(false);
 			log.setUser(it.name);
-			document.setMarkdown(it.mes);
-			document.setTextWidth(-1);
-			log.setContent(document.toHtml().remove(HtmlHeader).remove(HtmlFooter).remove(UnnecessaryFormatting));
+			log.setContent(markdownToHtml(it.mes));
 			if(it.gen_finished.isValid()) {
 				log.setDate(it.gen_finished.toLocalTime());
 				latest = it.gen_finished.toLocalTime();

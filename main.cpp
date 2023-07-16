@@ -14,7 +14,6 @@
 #include <functional>
 #include <iostream>
 #include <QTextDocument>
-#include "HtmlHeader.hpp"
 #include "HtmlToMarkdown.hpp"
 
 void text2json( QIODevice &in, QIODevice &out ) {
@@ -561,7 +560,6 @@ struct DiscordMessage {
 };
 QMap<QDateTime,DiscordMessage> getDiscordMessageMap(const QJsonObject& data)
 {
-	QTextDocument TextDoc;
 	QMap<QDateTime,DiscordMessage> DiscordMessageMap;
 	for(const auto it : data) {
 		QJsonObject objects = it.toObject();
@@ -569,8 +567,7 @@ QMap<QDateTime,DiscordMessage> getDiscordMessageMap(const QJsonObject& data)
 			QJsonObject message = zt.toObject();
 			DiscordMessage msg;
 			msg.sender = message["u"].toInt();
-			TextDoc.setMarkdown(message["m"].toString());
-			msg.message = TextDoc.toHtml().remove(HtmlHeader).remove(HtmlFooter).remove(UnnecessaryFormatting);
+			msg.message = markdownToHtml(message["m"].toString());
 			QDateTime timestamp = QDateTime::fromMSecsSinceEpoch(message["t"].toVariant().toLongLong());
 			DiscordMessageMap.insert(timestamp,msg);
 		}

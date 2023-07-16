@@ -3,5 +3,6 @@
 #include <QString>
 
 QString htmlToMarkdown(const QString& html);
+QString markdownToHtml(const QString& markdown);
 
 #endif // HTMLTOMARKDOWN_HPP

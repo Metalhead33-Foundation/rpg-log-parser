@@ -9,7 +9,6 @@ CONFIG -= app_bundle
 
 SOURCES += \
         Agnaistic.cpp \
-        HtmlHeader.cpp \
         HtmlToMarkdown.cpp \
         QFileException.cpp \
         RpgLog.cpp \
@@ -28,7 +27,6 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 
 HEADERS += \
 	Agnaistic.hpp \
-	HtmlHeader.hpp \
 	HtmlToMarkdown.hpp \
 	QFileException.hpp \
 	RpgLog.hpp \
