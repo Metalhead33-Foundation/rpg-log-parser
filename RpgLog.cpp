@@ -241,7 +241,7 @@ QDateTime RpgLog::attemptToStreamlineDate(DateFormat format)
 		}
 		bool okay = true;
 		int d = tokens[1].toInt(&okay);
-		if(!okay  || d >= 32 || d <= 0) return QDateTime();
+		if(!okay || d >= 32 || d <= 0) return QDateTime();
 		int y = tokens[2].toInt(&okay);
 		if(!okay) return QDateTime();
 		QStringList time = tokens[3].left(tokens[3].size()-2).split(QChar(':'),Qt::SkipEmptyParts);
@@ -291,7 +291,7 @@ QDateTime RpgLog::attemptToStreamlineDate(DateFormat format)
 		}
 		bool okay = true;
 		int d = tokens[2].toInt(&okay);
-		if(!okay) return QDateTime();
+		if(!okay || d >= 32 || d <= 0) return QDateTime();
 		int y = tokens[3].toInt(&okay);
 		if(!okay) return QDateTime();
 		QStringList time = tokens[4].split(QChar(':'),Qt::SkipEmptyParts);
@@ -362,9 +362,9 @@ QDateTime RpgLog::attemptToStreamlineDate(DateFormat format)
 		}
 		bool okay = true;
 		int m = tokens[0].toInt(&okay);
-		if(!okay) return QDateTime();
+		if(!okay || m >= 13 || m <= 0) return QDateTime();
 		int d = tokens[1].toInt(&okay);
-		if(!okay) return QDateTime();
+		if(!okay || d >= 32 || d <= 0) return QDateTime();
 		int y = tokens[2].toInt(&okay);
 		if(!okay) return QDateTime();
 		QTime time = QTime::fromString(tokens[3]);
@@ -380,7 +380,7 @@ QDateTime RpgLog::attemptToStreamlineDate(DateFormat format)
 		int y = tokens[0].toInt(&okay);
 		if(!okay) return QDateTime();
 		int d = tokens[2].toInt(&okay);
-		if(!okay) return QDateTime();
+		if(!okay || d >= 32 || d <= 0) return QDateTime();
 		int m = 0;
 		if(tokens[1].startsWith("jan",Qt::CaseInsensitive)) {
 			m = 1;
@@ -425,9 +425,9 @@ QDateTime RpgLog::attemptToStreamlineDate(DateFormat format)
 		if(tokens.size() < 5) return QDateTime();
 		bool okay = true;
 		int m = tokens[0].toInt(&okay);
-		if(!okay) return QDateTime();
+		if(!okay || m >= 13 || m <= 0) return QDateTime();
 		int d = tokens[1].toInt(&okay);
-		if(!okay) return QDateTime();
+		if(!okay || d >= 32 || d <= 0) return QDateTime();
 		int y = tokens[2].toInt(&okay);
 		if(!okay) return QDateTime();
 		QTime time = QTime::fromString(tokens[3]);
