@@ -491,6 +491,10 @@ QDateTime RpgLog::attemptToStreamlineDate(DateFormat format)
 	{
 		return QDateTime::fromString(this->date.toString());
 	}
+	case Regular:
+	{
+		return QDateTime::fromString(this->date.toString(), QStringLiteral("yyyy/MM/dd hh:mm:ss"));
+	}
 	case Dotted:
 	{
 		return QDateTime::fromString(this->date.toString(), QStringLiteral("yyyy. MM. dd. hh:mm:ss"));

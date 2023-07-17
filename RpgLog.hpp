@@ -26,6 +26,7 @@ public:
 		Litphoria,
 		QtHun,
 		QtRegular,
+		Regular,
 		Dotted,
 		SillyTavern1,
 		SillyTavern2,
