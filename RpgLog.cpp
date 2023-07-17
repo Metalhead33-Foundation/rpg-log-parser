@@ -197,7 +197,7 @@ QDateTime RpgLog::attemptToStreamlineDate(DateFormat format)
 			return QDateTime();
 		}
 		int d = tokens[2].toInt(&okay);
-		if(!okay) return QDateTime();
+		if(!okay || d >= 32 || d <= 0) return QDateTime();
 		QTime time = QTime::fromString(tokens[4].replace(QChar('.'),QChar(':')));
 		if(!time.isValid()) return QDateTime();
 		return QDateTime(QDate(y,m,d),time,QTimeZone::systemTimeZone());
@@ -241,7 +241,7 @@ QDateTime RpgLog::attemptToStreamlineDate(DateFormat format)
 		}
 		bool okay = true;
 		int d = tokens[1].toInt(&okay);
-		if(!okay) return QDateTime();
+		if(!okay  || d >= 32 || d <= 0) return QDateTime();
 		int y = tokens[2].toInt(&okay);
 		if(!okay) return QDateTime();
 		QStringList time = tokens[3].left(tokens[3].size()-2).split(QChar(':'),Qt::SkipEmptyParts);
