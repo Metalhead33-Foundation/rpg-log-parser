@@ -336,7 +336,7 @@ void SillyTavernConversaiton::fromJsonL(QTextStream &strm)
 	fromJsonL(lst);
 }
 
-void SillyTavernConversaiton::fromRpgSession(const RpgSession &session, const QString &playerName, const QString forceAvatarForPlayer)
+void SillyTavernConversaiton::fromRpgSession(const RpgSession &session, const QString &playerName, const QString forceAvatarForPlayer, bool rawMode)
 {
 	int chatDepth = 0;
 	header.user_name = playerName;
@@ -361,7 +361,7 @@ void SillyTavernConversaiton::fromRpgSession(const RpgSession &session, const QS
 		{
 			--chatDepth;
 			SillyTavern::Message msg;
-			msg.mes = htmlToMarkdown(log.getContent());
+			msg.mes = rawMode ? unwikiMarkdown(log.getContent()) : htmlToMarkdown(log.getContent());
 			msg.name = log.getUser();
 			msg.is_user = msg.name == playerName;
 			msg.is_name = !msg.is_user;

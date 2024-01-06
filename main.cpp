@@ -71,6 +71,7 @@ static const QString ARG_OUT = QStringLiteral( "--out" );
 static const QString ARG_PLAYERNAME = QStringLiteral( "--playername" );
 static const QString ARG_PLAYERUID = QStringLiteral( "--playeruid" );
 static const QString ARG_CHID = QStringLiteral( "--chid" );
+static const QString ARG_RAW = QStringLiteral( "--raw" );
 
 static const QString MODE_TEXTLOG2JSON = QStringLiteral( "textlog2json" );
 static const QString MODE_TEXTLOG2JSON_DIR =
@@ -318,11 +319,19 @@ int main( int argc, char *argv[] ) {
 		for(auto it = std::begin(ModeMap); it != std::end(ModeMap); ++it)
 		{
 			modeList.push_back(it.key());
+			if(it.key().endsWith(QStringLiteral("2sillytavern"))) {
+				modeList.push_back(QStringLiteral("%1Raw").arg(it.key()));
+			}
 		}
 		args.insert( ARG_MODE,
 			 QInputDialog::getItem(
 				 nullptr, QStringLiteral( "Select mode" ),
 				 QStringLiteral( "Mode:" ), modeList, 0, false ) );
+	}
+	if(args[ARG_MODE].endsWith(QStringLiteral("Raw")))
+	{
+		args[ARG_RAW] = QStringLiteral("true");
+		args[ARG_MODE].chop(3);
 	}
 	auto foundMode = ModeMap.find(args[ARG_MODE].toLower());
 	if(foundMode == std::end(ModeMap))
@@ -1000,6 +1009,7 @@ int sillytavern2json( const QMap< QString, QString > &args ) {
 }
 int textlog2sillytavern( const QMap< QString, QString > &args ) {
 	try {
+		bool rawMode = args.contains(ARG_RAW);
 		QString in = args[ARG_IN];
 		QFile inF( in );
 		if ( !inF.open( QFile::ReadOnly ) ) {
@@ -1014,7 +1024,7 @@ int textlog2sillytavern( const QMap< QString, QString > &args ) {
 		QTextStream strem( &inF );
 		sess.fromString( strem );
 		SillyTavernConversaiton sillytavern;
-		sillytavern.fromRpgSession(sess, args[ARG_PLAYERNAME]);
+		sillytavern.fromRpgSession(sess, args[ARG_PLAYERNAME], "User Avatars/1689330632925.png", rawMode);
 		QTextStream strem2( &outF );
 		sillytavern.toJsonL(strem2);
 		return 0;
@@ -1026,6 +1036,7 @@ int textlog2sillytavern( const QMap< QString, QString > &args ) {
 }
 int json2sillytavern( const QMap< QString, QString > &args ) {
 	try {
+		bool rawMode = args.contains(ARG_RAW);
 		QString in = args[ARG_IN];
 		QFile inF( in );
 		if ( !inF.open( QFile::ReadOnly ) ) {
@@ -1040,7 +1051,7 @@ int json2sillytavern( const QMap< QString, QString > &args ) {
 		QJsonDocument injson = QJsonDocument::fromJson( inF.readAll() );
 		sess.fromJson(injson.array() );
 		SillyTavernConversaiton sillytavern;
-		sillytavern.fromRpgSession(sess, args[ARG_PLAYERNAME]);
+		sillytavern.fromRpgSession(sess, args[ARG_PLAYERNAME], "User Avatars/1689330632925.png", rawMode);
 		QTextStream strem2( &outF );
 		sillytavern.toJsonL(strem2);
 		return 0;

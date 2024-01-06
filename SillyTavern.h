@@ -104,7 +104,7 @@ public:
 	void fromJsonL(const QStringList& strlist);
 	void fromJsonL(const QString& str);
 	void fromJsonL(QTextStream& strm);
-	void fromRpgSession(const RpgSession& session, const QString& playerName = "Stephanus Tavilrond", const QString forceAvatarForPlayer = "User Avatars/1689330632925.png");
+	void fromRpgSession(const RpgSession& session, const QString& playerName = "Stephanus Tavilrond", const QString forceAvatarForPlayer = "User Avatars/1689330632925.png", bool rawMode = false);
 	void toRpgSession(RpgSession& session) const;
 };
 

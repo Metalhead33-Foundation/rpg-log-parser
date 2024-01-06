@@ -1,6 +1,7 @@
 #include "HtmlToMarkdown.hpp"
 #include <QTextDocument>
 #include <QList>
+#include <QRegularExpression>
 
 const QString HtmlHeader = QStringLiteral("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n<html><head><meta name=\"qrichtext\" content=\"1\" /><meta charset=\"utf-8\" /><style type=\"text/css\">\np, li { white-space: pre-wrap; }\n</style></head><body style=\" font-family:\'Sans Serif\'; font-size:9pt; font-weight:400; font-style:normal;\">\n");
 const QString HtmlFooter = QStringLiteral("</body></html>");
@@ -33,4 +34,23 @@ QString markdownToHtml(const QString &markdown)
 	QTextDocument document;
 	document.setMarkdown(markdown);
 	return document.toHtml().remove(HtmlHeader).remove(HtmlFooter).remove(UnnecessaryFormatting);
+}
+
+QString unwikiMarkdown(const QString &markdown)
+{
+	QString toReturn(markdown);
+	toReturn.remove(QStringLiteral("<nowiki>"));
+	toReturn.remove(QStringLiteral("</nowiki>"));
+	//toReturn = toReturn.replace(QRegularExpression("\\[([^\\]]+)\\s+([^\\]]+)\\]"), QStringLiteral("[\\2](\\1)"));
+	//toReturn = toReturn.replace(QRegularExpression("\\[\\[([^|]+)\\|([^\\]]+)\\]\\]"), QStringLiteral("[\\2](https://waysofdarkness.miraheze.org/wiki/\\1)"));
+	//toReturn = toReturn.replace(QRegularExpression("\\[\\[(.*?)\\]\\]"), QStringLiteral("[\\1](https://waysofdarkness.miraheze.org/wiki/\\1)"));
+	//toReturn = toReturn.replace(QRegularExpression("\\[\\[(.*?)\\|(.*?)\\]\\]"), QStringLiteral("\5\\2\6(https://waysofdarkness.miraheze.org/wiki/\\1)"));
+	//toReturn = toReturn.replace(QRegularExpression("\\[\\[(.*?)\\]\\]"), QStringLiteral("\5\\1\6(https://waysofdarkness.miraheze.org/wiki/\\1)"));
+	//toReturn = toReturn.replace(QRegularExpression("\\[([^\\]]+)\\s+(.*?)\\]"), QStringLiteral("[\\2](\\1)"));
+	toReturn = toReturn.replace(QRegularExpression("\\[\\[([^|]+?)\\]\\]"), QStringLiteral("\5\\1\6(https://waysofdarkness.miraheze.org/wiki/\\1)"));
+	toReturn = toReturn.replace(QRegularExpression("\\[\\[([^|]+?)\\|([^\\]]+?)\\]\\]"), QStringLiteral("\5\\2\6(https://waysofdarkness.miraheze.org/wiki/\\1)"));
+	toReturn = toReturn.replace(QRegularExpression("\\[([^\\]\\s]+?)\\s+([^\\]]+?)\\]"), QStringLiteral("[\\2](\\1)"));
+	toReturn = toReturn.replace('\5','[');
+	toReturn = toReturn.replace('\6',']');
+	return toReturn;
 }
