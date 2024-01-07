@@ -19,6 +19,8 @@ static const QList<QString> REAL_NEWLINES = {
 QString htmlToMarkdown(const QString& html)
 {
 	QString doc = html;
+	doc = doc.replace(QStringLiteral("<q>"),QStringLiteral("\""));
+	doc = doc.replace(QStringLiteral("</q>"),QStringLiteral("\""));
 	for(const auto& it : REAL_NEWLINES)
 	{
 		doc = doc.replace(it,QStringLiteral("\x13"));
@@ -33,7 +35,13 @@ QString markdownToHtml(const QString &markdown)
 {
 	QTextDocument document;
 	document.setMarkdown(markdown);
-	return document.toHtml().remove(HtmlHeader).remove(HtmlFooter).remove(UnnecessaryFormatting);
+	return document.toHtml()
+			.remove(HtmlHeader)
+			.remove(HtmlFooter)
+			.remove(UnnecessaryFormatting)
+			.replace(QRegularExpression("<a href=\"https://waysofdarkness\\.miraheze\\.org/wiki/([^\">]+)\">([^<]+)</a>"), QStringLiteral("[[\\1|\\2]]"))
+			.replace(QRegularExpression("<a\\s+href=\"([^\"]+)\">([^<]+)<\\/a>"), QStringLiteral("[\\1 \\2]"))
+			.replace(QRegularExpression("&quot;(.*?)&quot;"), QStringLiteral("<q>\\1</q>"));
 }
 
 QString unwikiMarkdown(const QString &markdown)
