@@ -398,26 +398,28 @@ void SillyTavernConversaiton::toRpgSession(RpgSession &session) const
 		QDateTime latest;
 		for(const auto& it : qAsConst(messages))
 		{
-			RpgLog log;
-			log.setHun(false);
-			log.setUser(it.name);
-			log.setContent(markdownToHtml(it.mes));
-			if(it.gen_finished.isValid()) {
-				log.setDate(it.gen_finished.toLocalTime());
-				latest = it.gen_finished.toLocalTime();
-			}
-			else if(it.send_date.isValid())
-			{
-				log.setDate(it.send_date);
-			}
-			if(latest.isValid())
-			{
-				if(latest >= log.getDate().toDateTime())
-				{
-					log.setDate(latest.addSecs(360));
+			if(!it.name.isEmpty() && it.name.compare(QStringLiteral("system"),Qt::CaseInsensitive)) {
+				RpgLog log;
+				log.setHun(false);
+				log.setUser(it.name);
+				log.setContent(markdownToHtml(it.mes));
+				if(it.gen_finished.isValid()) {
+					log.setDate(it.gen_finished.toLocalTime());
+					latest = it.gen_finished.toLocalTime();
 				}
-			} else latest = log.getDate().toDateTime();
-			section.getLogs().push_back(log);
+				else if(it.send_date.isValid())
+				{
+					log.setDate(it.send_date);
+				}
+				if(latest.isValid())
+				{
+					if(latest >= log.getDate().toDateTime())
+					{
+						log.setDate(latest.addSecs(360));
+					}
+				} else latest = log.getDate().toDateTime();
+				section.getLogs().push_back(log);
+			}
 		}
 		sections.push_back(section);
 	}
