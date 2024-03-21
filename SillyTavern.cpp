@@ -138,6 +138,7 @@ void SwipeInfo::toJson(QJsonObject &json) const
 	json[QStringLiteral("send_date")] = AmericanLocale.toString(this->send_date,dateFormat3);
 	json[QStringLiteral("gen_started")] = this->gen_started.toString(dateFormat2);
 	json[QStringLiteral("gen_finished")] = this->gen_finished.toString(dateFormat2);
+	json[QStringLiteral("extra")] = this->extra.toJson();
 }
 
 QJsonObject SwipeInfo::toJson() const
@@ -154,6 +155,7 @@ void SwipeInfo::fromJson(const QJsonObject &json)
 	this->gen_started.setTimeSpec(Qt::UTC);
 	this->gen_finished = QDateTime::fromString(json[QStringLiteral("gen_finished")].toString(),dateFormat2);
 	this->gen_finished.setTimeSpec(Qt::UTC);
+	this->extra.fromJson(json[QStringLiteral("extra")].toObject());
 }
 
 SwipeInfo SwipeInfo::createFromJson(const QJsonObject &json)
@@ -177,7 +179,7 @@ SwipeInfo SwipeInfo::createFromJson(const QJsonObject &json)
 */
 void Message::toJson(QJsonObject &json) const
 {
-	json[QStringLiteral("extra")] = QJsonValue::fromVariant(this->extra);
+	json[QStringLiteral("extra")] = this->extra.toJson();
 	json[QStringLiteral("name")] = this->name;
 	json[QStringLiteral("is_user")] = this->is_user;
 	json[QStringLiteral("is_name")] = this->is_name;
@@ -210,7 +212,7 @@ QJsonObject Message::toJson() const
 
 void Message::fromJson(const QJsonObject &json)
 {
-	this->extra = json[QStringLiteral("extra")].toVariant();
+	this->extra.fromJson(json[QStringLiteral("extra")].toObject());
 	this->name = json[QStringLiteral("name")].toString();
 	this->is_user = json[QStringLiteral("is_user")].toBool();
 	this->is_name = json[QStringLiteral("is_name")].toBool();
@@ -242,6 +244,34 @@ Message Message::createFromJson(const QJsonObject &json)
 	tmp.fromJson(json);
 	return tmp;
 }
+
+void Extra::toJson(QJsonObject &json) const
+{
+	json[QStringLiteral("api")] = this->api;
+	json[QStringLiteral("model")] = this->model;
+	json[QStringLiteral("bias")] = QJsonValue(QJsonValue::Null);
+}
+
+QJsonObject Extra::toJson() const
+{
+	QJsonObject tmp;
+	toJson(tmp);
+	return tmp;
+}
+
+void Extra::fromJson(const QJsonObject &json)
+{
+	this->api = json[QStringLiteral("api")].toString();
+	this->model = json[QStringLiteral("model")].toString();
+}
+
+Extra Extra::createFromJson(const QJsonObject &json)
+{
+	Extra tmp;
+	tmp.fromJson(json);
+	return tmp;
+}
+
 }
 
 const QList<SillyTavern::Message> &SillyTavernConversaiton::getMessages() const

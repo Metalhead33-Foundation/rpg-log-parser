@@ -9,6 +9,16 @@
 #include <QList>
 namespace SillyTavern {
 // Struct for chat metadata objective
+
+struct Extra {
+	QString api;
+	QString model;
+	void toJson(QJsonObject& json) const;
+	QJsonObject toJson() const;
+	void fromJson(const QJsonObject& json);
+	static Extra createFromJson(const QJsonObject& json);
+};
+
 struct Objective {
 	QString objective;
 	QStringList tasks;
@@ -54,6 +64,7 @@ struct SwipeInfo {
 	QDateTime send_date;
 	QDateTime gen_started;
 	QDateTime gen_finished;
+	Extra extra;
 	// JSON
 	void toJson(QJsonObject& json) const;
 	QJsonObject toJson() const;
@@ -63,7 +74,7 @@ struct SwipeInfo {
 
 // Struct for swipes
 struct Message {
-	QVariant extra;
+	Extra extra;
 	QString name;
 	bool is_user;
 	bool is_name;
