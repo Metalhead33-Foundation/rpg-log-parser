@@ -378,6 +378,9 @@ void SillyTavernConversaiton::fromRpgSession(const RpgSession &session, const QS
 			++chatDepth;
 		}
 	}
+	SillyTavern::Extra extras;
+	extras.api = "novel";
+	extras.model = "kayra-v1";
 	header.chat_metadata.note_depth = 4;
 	header.chat_metadata.note_interval = 1;
 	header.chat_metadata.note_position = 1;
@@ -391,6 +394,7 @@ void SillyTavernConversaiton::fromRpgSession(const RpgSession &session, const QS
 		{
 			--chatDepth;
 			SillyTavern::Message msg;
+			msg.extra = extras;
 			msg.mes = rawMode ? unwikiMarkdown(log.getContent()) : htmlToMarkdown(log.getContent());
 			msg.name = log.getUser();
 			msg.is_user = msg.name == playerName;
@@ -403,7 +407,7 @@ void SillyTavernConversaiton::fromRpgSession(const RpgSession &session, const QS
 				msg.gen_started = msg.send_date;
 				msg.swipe_id = 0;
 				msg.swipes = QStringList() << msg.mes;
-				msg.swipe_info.push_back(SillyTavern::SwipeInfo{ .send_date = msg.send_date, .gen_started = msg.send_date, .gen_finished = msg.send_date });
+				msg.swipe_info.push_back(SillyTavern::SwipeInfo{ .send_date = msg.send_date, .gen_started = msg.send_date, .gen_finished = msg.send_date, .extra = extras });
 			}
 			messages.push_back(msg);
 		}
